@@ -34,6 +34,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.3.2
+  go_router: ^17.2.3
+  supabase_flutter: ^2.16.0
+  logger: ^2.7.0
+  intl: 0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +51,9 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -57,33 +66,111 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Enables flutter gen-l10n, driven by l10n.yaml, to generate
+  # AppLocalizations from lib/l10n/app_en.arb and app_ar.arb.
+  generate: true
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
+  # Assets are organized by purpose under assets/ — see docs/DESIGN_SYSTEM.md
+  # §12 and docs/IMPLEMENTATION_ROADMAP.md §20:
+  #   assets/logos/         official brand marks (bariqon_logo.jpeg lives here)
+  #   assets/icons/         hand-authored icons not covered by an icon font
+  #   assets/images/        bundled illustrations/placeholders (NOT product
+  #                         photography — that's always remote, served from
+  #                         Supabase Storage, per docs/SUPABASE_INTEGRATION.md §5)
+  #   assets/placeholders/  fallback imagery (e.g. missing product image)
+  #   assets/fonts/         brand font files — see the `fonts:` block below;
+  #                         currently empty pending the font files themselves
+  #
+  # Only folders/files that currently contain real assets are declared below.
+  # assets/icons, assets/images, assets/placeholders, and assets/fonts exist
+  # as scaffolding (each holds a .gitkeep) but aren't declared here yet, so
+  # nothing empty gets bundled into the app binary — add each declaration
+  # when real content lands in that folder.
+  assets:
+    - assets/logos/bariqon_logo.jpeg
 
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
+  # Brand font families are confirmed (docs/DESIGN_SYSTEM.md §2, read
+  # directly from bariqon.bh's production CSS) but the font FILES are not
+  # yet sourced — downloading them requires your explicit go-ahead first
+  # (see docs/IMPLEMENTATION_ROADMAP.md §20 / this session's Foundation
+  # Health Check report). Required files, once available, go in
+  # assets/fonts/ and get declared here as:
+  #
   # fonts:
-  #   - family: Schyler
+  #   - family: Inter                 # body text, LTR
   #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Inter-Bold.ttf
   #         weight: 700
+  #   - family: PlayfairDisplay       # headings, LTR
+  #     fonts:
+  #       - asset: assets/fonts/PlayfairDisplay-Regular.ttf
+  #       - asset: assets/fonts/PlayfairDisplay-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/PlayfairDisplay-Bold.ttf
+  #         weight: 700
+  #   - family: Cairo                 # body text, RTL (variable weight 200-1000 on the site)
+  #     fonts:
+  #       - asset: assets/fonts/Cairo-Regular.ttf
+  #       - asset: assets/fonts/Cairo-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Cairo-Bold.ttf
+  #         weight: 700
+  #   - family: Amiri                 # headings, RTL (site only loads weight 400 —
+  #     fonts:                        # see docs/DESIGN_SYSTEM.md §2's bold-weight note)
+  #       - asset: assets/fonts/Amiri-Regular.ttf
+  #
+  # Until these are added, AppFonts (lib/core/theme/app_fonts.dart) references
+  # these family names and Flutter silently falls back to the platform
+  # default font — no crash, just not-yet-branded typography.
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Native splash screen config, consumed by `dart run flutter_native_splash:create`
+# (not a runtime dependency — flutter_native_splash is dev-only, generating
+# static native launch assets for Android/iOS from the official logo).
+# White background matches the logo's own background so it reads as one
+# continuous piece, not a boxed image; BoxFit.contain-equivalent centering
+# is the tool's default, so the logo is scaled, never stretched or cropped.
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/logos/bariqon_logo.jpeg
+  android_12:
+    color: "#FFFFFF"
+    image: assets/logos/bariqon_logo.jpeg
+  # Android 12+'s system splash API constrains the image to a small centered
+  # icon area (~768dp safe zone) — our logo is a wide wordmark lockup, not a
+  # square emblem, so it will render smaller/tighter there than on the
+  # classic splash below it. That's a platform-level size constraint, not
+  # distortion (aspect ratio is still preserved). A square, emblem-only
+  # crop of the logo would look better here — flagged as a follow-up asset
+  # request in the Foundation Health Check report, not created here.
+  android: true
+  ios: true
+  web: false
+
+# Launcher icon config, consumed by `dart run flutter_launcher_icons`.
+#
+# Deliberately NOT the horizontal Bariqon logo (assets/logos/bariqon_logo.jpeg)
+# — that's a wide wordmark lockup (mark + "BARIQON TRADING" + tagline) that
+# would either be stretched or reduced to unreadable tiny text if forced into
+# a square icon. assets/icons/app_icon_source.png is a purpose-built square
+# asset instead: just the flower/bottle/leaves brand mark, isolated from the
+# logo's circular ring badge and wordmark, centered with a generous safe-zone
+# margin (~55% content ratio) so it survives Android adaptive-icon masking
+# (circle/squircle/rounded-square — varies by launcher) without clipping.
+# See this session's notes for how it was derived — cropped and cleaned from
+# the official logo, not redrawn, so it's the real mark, not a substitute.
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/icons/app_icon_source.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/app_icon_source.png"

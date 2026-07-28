@@ -1,4 +1,4 @@
-package com.example.bariqon_app
+package com.bariqon.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,0 +1,253 @@
+{
+  "@@locale": "en",
+
+  "appName": "Bariqon",
+  "@appName": {
+    "description": "App name, shown on the splash screen and in the OS app switcher."
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Generic retry action on error states."
+  },
+
+  "loading": "Loading…",
+  "@loading": {
+    "description": "Generic loading label."
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "Generic confirmation action."
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic dismiss/cancel action."
+  },
+
+  "close": "Close",
+  "@close": {
+    "description": "Generic close action."
+  },
+
+  "genericErrorTitle": "Something went wrong",
+  "@genericErrorTitle": {
+    "description": "Title shown on a generic ErrorStateView when a more specific message isn't available."
+  },
+
+  "genericErrorMessage": "We couldn't complete that. Please try again.",
+  "@genericErrorMessage": {
+    "description": "Body text paired with genericErrorTitle."
+  },
+
+  "networkErrorMessage": "Couldn't connect. Check your internet connection and try again.",
+  "@networkErrorMessage": {
+    "description": "Shown when a request fails due to connectivity/timeout."
+  },
+
+  "offlineBannerMessage": "You're offline. Showing saved content.",
+  "@offlineBannerMessage": {
+    "description": "Persistent banner shown while the device has no connectivity."
+  },
+
+  "emptyStateGenericMessage": "Nothing here yet.",
+  "@emptyStateGenericMessage": {
+    "description": "Fallback empty-state message when a screen-specific one isn't provided."
+  },
+
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Bottom navigation tab label."
+  },
+
+  "navCategories": "Categories",
+  "@navCategories": {
+    "description": "Bottom navigation tab label."
+  },
+
+  "navInquiry": "Inquiry",
+  "@navInquiry": {
+    "description": "Bottom navigation tab label."
+  },
+
+  "navProfile": "Profile",
+  "@navProfile": {
+    "description": "Bottom navigation tab label."
+  },
+
+  "comingSoonBadge": "Coming soon",
+  "@comingSoonBadge": {
+    "description": "Placeholder badge shown on tab root screens not yet implemented (Categories, Inquiry, Profile as of Phase 2B — Home got its real UI this phase)."
+  },
+
+  "searchTitle": "Search",
+  "@searchTitle": {
+    "description": "Title of the search screen."
+  },
+
+  "searchHint": "Search products…",
+  "@searchHint": {
+    "description": "Placeholder text in the search field. The field is UI-only in Phase 2A — no query is executed yet."
+  },
+
+  "toggleLanguageTooltip": "Switch language",
+  "@toggleLanguageTooltip": {
+    "description": "Tooltip/semantic label for the temporary language toggle in the app bar, ahead of the real Language Selector screen (Settings, later phase)."
+  },
+
+  "homeWelcomeTitle": "Welcome to Bariqon",
+  "@homeWelcomeTitle": {
+    "description": "Home screen welcome section heading."
+  },
+
+  "homeWelcomeSubtitle": "Premium hospitality, gifting & packaging — curated for you.",
+  "@homeWelcomeSubtitle": {
+    "description": "Home screen welcome section subheading."
+  },
+
+  "homeHeroSlide1Title": "Luxury Gift Boxes",
+  "@homeHeroSlide1Title": {
+    "description": "Hero carousel slide 1 title."
+  },
+
+  "homeHeroSlide1Subtitle": "Elegantly crafted for every occasion",
+  "@homeHeroSlide1Subtitle": {
+    "description": "Hero carousel slide 1 subtitle."
+  },
+
+  "homeHeroSlide2Title": "Hospitality Amenities",
+  "@homeHeroSlide2Title": {
+    "description": "Hero carousel slide 2 title."
+  },
+
+  "homeHeroSlide2Subtitle": "Trusted by leading venues",
+  "@homeHeroSlide2Subtitle": {
+    "description": "Hero carousel slide 2 subtitle."
+  },
+
+  "homeHeroSlide3Title": "Bespoke Packaging",
+  "@homeHeroSlide3Title": {
+    "description": "Hero carousel slide 3 title."
+  },
+
+  "homeHeroSlide3Subtitle": "Designed around your brand",
+  "@homeHeroSlide3Subtitle": {
+    "description": "Hero carousel slide 3 subtitle."
+  },
+
+  "homeSectionFeaturedCategories": "Featured Categories",
+  "@homeSectionFeaturedCategories": {
+    "description": "Home screen section title."
+  },
+
+  "homeSectionFeaturedProducts": "Featured Products",
+  "@homeSectionFeaturedProducts": {
+    "description": "Home screen section title."
+  },
+
+  "homeSectionNewArrivals": "New Arrivals",
+  "@homeSectionNewArrivals": {
+    "description": "Home screen section title."
+  },
+
+  "homeSectionBestSellers": "Best Sellers",
+  "@homeSectionBestSellers": {
+    "description": "Home screen section title."
+  },
+
+  "homeViewAll": "View All",
+  "@homeViewAll": {
+    "description": "Trailing action on a Home section header."
+  },
+
+  "homeSendInquiry": "Send Inquiry",
+  "@homeSendInquiry": {
+    "description": "Button label on a product card. UI-only in Phase 2B — no cart/backend yet."
+  },
+
+  "homeSendInquirySnackbar": "Inquiry cart — coming soon",
+  "@homeSendInquirySnackbar": {
+    "description": "Snackbar shown when tapping Send Inquiry, since there's no cart yet."
+  },
+
+  "homeProductDetailSnackbar": "Product details — coming soon",
+  "@homeProductDetailSnackbar": {
+    "description": "Snackbar shown when tapping a product card, since Product Detail doesn't exist yet."
+  },
+
+  "homePromoTitle": "Sourcing for a Big Event?",
+  "@homePromoTitle": {
+    "description": "Promotional banner title."
+  },
+
+  "homePromoSubtitle": "Talk to our team about bulk and bespoke orders.",
+  "@homePromoSubtitle": {
+    "description": "Promotional banner subtitle."
+  },
+
+  "homePromoCta": "Get in Touch",
+  "@homePromoCta": {
+    "description": "Promotional banner call-to-action button label."
+  },
+
+  "homeWhyChooseTitle": "Why Choose Bariqon",
+  "@homeWhyChooseTitle": {
+    "description": "Value-proposition section title."
+  },
+
+  "homeWhyReason1Title": "Premium Quality",
+  "@homeWhyReason1Title": {
+    "description": "Value proposition 1 title."
+  },
+
+  "homeWhyReason1Desc": "Carefully sourced materials and finishes.",
+  "@homeWhyReason1Desc": {
+    "description": "Value proposition 1 description."
+  },
+
+  "homeWhyReason2Title": "Trusted Partner",
+  "@homeWhyReason2Title": {
+    "description": "Value proposition 2 title."
+  },
+
+  "homeWhyReason2Desc": "Relied on by hospitality and retail businesses.",
+  "@homeWhyReason2Desc": {
+    "description": "Value proposition 2 description."
+  },
+
+  "homeWhyReason3Title": "Bespoke Solutions",
+  "@homeWhyReason3Title": {
+    "description": "Value proposition 3 title."
+  },
+
+  "homeWhyReason3Desc": "Packaging and gifting tailored to your brand.",
+  "@homeWhyReason3Desc": {
+    "description": "Value proposition 3 description."
+  },
+
+  "homeWhyReason4Title": "Reliable Sourcing",
+  "@homeWhyReason4Title": {
+    "description": "Value proposition 4 title."
+  },
+
+  "homeWhyReason4Desc": "Consistent quality, delivered on time.",
+  "@homeWhyReason4Desc": {
+    "description": "Value proposition 4 description."
+  },
+
+  "homeFooterTagline": "A premium supplier of hospitality, gifting & packaging solutions.",
+  "@homeFooterTagline": {
+    "description": "Home screen footer tagline."
+  },
+
+  "homeFooterRights": "© 2026 Bariqon Trading. All rights reserved.",
+  "@homeFooterRights": {
+    "description": "Home screen footer copyright line."
+  },
+
+  "homeFooterLinkSnackbar": "Coming soon",
+  "@homeFooterLinkSnackbar": {
+    "description": "Snackbar shown when tapping a footer contact/social icon, none of which are wired up yet."
+  }
+}
