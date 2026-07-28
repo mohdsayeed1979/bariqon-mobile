@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../core/config/app_config.dart';
 import '../core/theme/app_theme.dart';
+import '../features/settings/presentation/controllers/settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'router.dart';
 
@@ -28,6 +29,7 @@ class BariqonApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
     final isRtl = AppConfig.isRtl(locale);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: AppConfig.appName,
@@ -35,7 +37,7 @@ class BariqonApp extends ConsumerWidget {
       routerConfig: router,
       theme: AppTheme.light(isRtl: isRtl),
       darkTheme: AppTheme.dark(isRtl: isRtl),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       locale: locale,
       supportedLocales: AppConfig.supportedLocales,
       localizationsDelegates: const [

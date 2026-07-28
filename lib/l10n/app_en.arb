@@ -527,5 +527,301 @@
   "inquiryConfirmationContinueCta": "Continue Browsing",
   "@inquiryConfirmationContinueCta": {
     "description": "Inquiry Confirmation call-to-action back to Home."
+  },
+
+  "loginTitle": "Sign In",
+  "@loginTitle": {
+    "description": "Login screen app bar title."
+  },
+
+  "loginWelcomeMessage": "Sign in to manage your inquiries and profile.",
+  "@loginWelcomeMessage": {
+    "description": "Subtitle shown under the logo on the Login screen."
+  },
+
+  "authEmailLabel": "Email",
+  "@authEmailLabel": {
+    "description": "Email field label, shared by Login/Registration/Forgot Password/Edit Profile."
+  },
+
+  "authPasswordLabel": "Password",
+  "@authPasswordLabel": {
+    "description": "Password field label."
+  },
+
+  "authConfirmPasswordLabel": "Confirm Password",
+  "@authConfirmPasswordLabel": {
+    "description": "Confirm-password field label on Registration."
+  },
+
+  "authRememberMe": "Remember me",
+  "@authRememberMe": {
+    "description": "Remember Me checkbox label on Login."
+  },
+
+  "authForgotPassword": "Forgot Password?",
+  "@authForgotPassword": {
+    "description": "Link on Login to the Forgot Password screen."
+  },
+
+  "authSignInCta": "Sign In",
+  "@authSignInCta": {
+    "description": "Primary sign-in action, used on Login and as a prompt elsewhere (e.g. Profile)."
+  },
+
+  "authContinueAsGuest": "Continue as Guest",
+  "@authContinueAsGuest": {
+    "description": "Login screen action to browse without an account."
+  },
+
+  "authNoAccountPrompt": "Don't have an account?",
+  "@authNoAccountPrompt": {
+    "description": "Prompt on Login before the Register link."
+  },
+
+  "authHaveAccountPrompt": "Already have an account?",
+  "@authHaveAccountPrompt": {
+    "description": "Prompt on Registration before the Sign In link."
+  },
+
+  "authRegisterCta": "Register",
+  "@authRegisterCta": {
+    "description": "Registration action, used on Login's footer and as a prompt elsewhere (e.g. Profile)."
+  },
+
+  "authCreateAccountCta": "Create Account",
+  "@authCreateAccountCta": {
+    "description": "Registration screen's submit button."
+  },
+
+  "validationPasswordMismatch": "Passwords do not match.",
+  "@validationPasswordMismatch": {
+    "description": "Confirm-password validation message on Registration."
+  },
+
+  "registerTitle": "Create Account",
+  "@registerTitle": {
+    "description": "Registration screen app bar title."
+  },
+
+  "forgotPasswordTitle": "Forgot Password",
+  "@forgotPasswordTitle": {
+    "description": "Forgot Password screen app bar title."
+  },
+
+  "forgotPasswordInstructions": "Enter the email address associated with your account and we'll send you a link to reset your password.",
+  "@forgotPasswordInstructions": {
+    "description": "Instructional copy above the email field on Forgot Password."
+  },
+
+  "forgotPasswordSubmit": "Send Reset Link",
+  "@forgotPasswordSubmit": {
+    "description": "Forgot Password submit button."
+  },
+
+  "forgotPasswordSuccessHeading": "Check Your Email",
+  "@forgotPasswordSuccessHeading": {
+    "description": "Heading shown after a mock password-reset request is sent."
+  },
+
+  "forgotPasswordSuccessMessage": "If an account exists for {email}, a password reset link has been sent.",
+  "@forgotPasswordSuccessMessage": {
+    "description": "Success message after a mock password-reset request, includes the submitted email.",
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+
+  "forgotPasswordBackToSignIn": "Back to Sign In",
+  "@forgotPasswordBackToSignIn": {
+    "description": "Forgot Password success screen's action back to Login."
+  },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings screen app bar title, and the tooltip/icon reaching it from Profile."
+  },
+
+  "settingsLanguageTitle": "Language",
+  "@settingsLanguageTitle": {
+    "description": "Settings row label."
+  },
+
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {
+    "description": "Current-language value shown in Settings' Language row."
+  },
+
+  "settingsLanguageArabic": "العربية",
+  "@settingsLanguageArabic": {
+    "description": "Current-language value shown in Settings' Language row."
+  },
+
+  "settingsThemeTitle": "Theme",
+  "@settingsThemeTitle": {
+    "description": "Settings row label, and the theme-picker dialog title."
+  },
+
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": {
+    "description": "Theme option: follow the device setting."
+  },
+
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Theme option."
+  },
+
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Theme option."
+  },
+
+  "settingsNotificationsTitle": "Notifications",
+  "@settingsNotificationsTitle": {
+    "description": "Settings row label, and Notification Preferences screen app bar title."
+  },
+
+  "settingsAboutTitle": "About Bariqon",
+  "@settingsAboutTitle": {
+    "description": "Settings row label, and About screen app bar title."
+  },
+
+  "settingsContactTitle": "Contact Us",
+  "@settingsContactTitle": {
+    "description": "Settings row label, and Contact screen app bar title."
+  },
+
+  "settingsPrivacyTitle": "Privacy Policy",
+  "@settingsPrivacyTitle": {
+    "description": "Settings row label, and Privacy Policy screen app bar title."
+  },
+
+  "settingsTermsTitle": "Terms & Conditions",
+  "@settingsTermsTitle": {
+    "description": "Settings row label, and Terms screen app bar title."
+  },
+
+  "aboutTagline": "Luxury Gifting, Hospitality & Packaging — Curated for You.",
+  "@aboutTagline": {
+    "description": "About screen tagline under the logo."
+  },
+
+  "aboutDescription": "Bariqon Trading is a Bahrain-based company specializing in luxury gift boxes, hospitality supplies, and custom packaging for businesses and individuals across the region. We partner with discerning clients to deliver premium presentation and dependable service on every order.",
+  "@aboutDescription": {
+    "description": "About screen body copy — placeholder company description pending final marketing copy."
+  },
+
+  "aboutVersionLabel": "Version {version}",
+  "@aboutVersionLabel": {
+    "description": "App version label at the bottom of the About screen.",
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+
+  "contactEmailLabel": "Email",
+  "@contactEmailLabel": {
+    "description": "Contact screen row label."
+  },
+
+  "contactPhoneLabel": "Phone",
+  "@contactPhoneLabel": {
+    "description": "Contact screen row label."
+  },
+
+  "contactWhatsappLabel": "WhatsApp",
+  "@contactWhatsappLabel": {
+    "description": "Contact screen row label."
+  },
+
+  "contactAddressLabel": "Address",
+  "@contactAddressLabel": {
+    "description": "Contact screen row label."
+  },
+
+  "legalPrivacyPolicyBody": "This is a placeholder Privacy Policy for the Bariqon mobile app. It will be replaced with Bariqon Trading's final, legally reviewed privacy policy before this app is published, covering what data is collected, how it is used, and how customers can exercise their privacy rights.",
+  "@legalPrivacyPolicyBody": {
+    "description": "Placeholder Privacy Policy body text — not final legal copy."
+  },
+
+  "legalTermsBody": "This is a placeholder Terms & Conditions document for the Bariqon mobile app. It will be replaced with Bariqon Trading's final, legally reviewed terms before this app is published, covering use of the app, inquiries submitted through it, and related policies.",
+  "@legalTermsBody": {
+    "description": "Placeholder Terms & Conditions body text — not final legal copy."
+  },
+
+  "notificationOrderUpdatesTitle": "Order & Inquiry Updates",
+  "@notificationOrderUpdatesTitle": {
+    "description": "Notification Preferences toggle title."
+  },
+
+  "notificationOrderUpdatesSubtitle": "Status updates on inquiries you've submitted.",
+  "@notificationOrderUpdatesSubtitle": {
+    "description": "Notification Preferences toggle subtitle."
+  },
+
+  "notificationPromotionsTitle": "Promotions & Offers",
+  "@notificationPromotionsTitle": {
+    "description": "Notification Preferences toggle title."
+  },
+
+  "notificationPromotionsSubtitle": "Occasional deals and seasonal offers.",
+  "@notificationPromotionsSubtitle": {
+    "description": "Notification Preferences toggle subtitle."
+  },
+
+  "notificationNewArrivalsTitle": "New Arrivals",
+  "@notificationNewArrivalsTitle": {
+    "description": "Notification Preferences toggle title."
+  },
+
+  "notificationNewArrivalsSubtitle": "Be the first to know about new products.",
+  "@notificationNewArrivalsSubtitle": {
+    "description": "Notification Preferences toggle subtitle."
+  },
+
+  "profileSignedOutMessage": "Sign in to view your profile, saved details, and inquiry history.",
+  "@profileSignedOutMessage": {
+    "description": "Profile tab body message when the session is Signed Out."
+  },
+
+  "profileGuestMessage": "You're browsing as a guest. Sign in or create an account to save your profile.",
+  "@profileGuestMessage": {
+    "description": "Profile tab body message when the session is Guest."
+  },
+
+  "profileNotProvided": "Not provided",
+  "@profileNotProvided": {
+    "description": "Placeholder value for an empty profile field (e.g. mobile, country)."
+  },
+
+  "profileEditTitle": "Edit Profile",
+  "@profileEditTitle": {
+    "description": "Edit Profile screen app bar title."
+  },
+
+  "profileEditCta": "Edit Profile",
+  "@profileEditCta": {
+    "description": "Profile screen's action to Edit Profile."
+  },
+
+  "profileSaveCta": "Save Changes",
+  "@profileSaveCta": {
+    "description": "Edit Profile screen's submit button."
+  },
+
+  "profileSignOutAction": "Sign Out",
+  "@profileSignOutAction": {
+    "description": "Profile screen's sign-out action, and the confirm dialog's destructive button label."
+  },
+
+  "profileSignOutConfirmTitle": "Sign out?",
+  "@profileSignOutConfirmTitle": {
+    "description": "Confirmation dialog title before signing out."
+  },
+
+  "profileSignOutConfirmMessage": "You'll need to sign in again to view your profile.",
+  "@profileSignOutConfirmMessage": {
+    "description": "Confirmation dialog message before signing out."
   }
 }

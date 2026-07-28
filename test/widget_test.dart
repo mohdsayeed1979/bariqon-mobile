@@ -580,4 +580,387 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'Login screen signs in with mock auth; Profile, Edit Profile, and Sign '
+    'Out all reflect the session',
+    (tester) async {
+      // Taller than the suite's default 800x600 — the Signed In Profile's
+      // Sign Out button sits below the fold otherwise, and (per Phase 3's
+      // Inquiry Cart test) the sliver machinery behind a plain
+      // `ListView(children: ...)` only inflates elements within the
+      // viewport, so an off-screen widget isn't just untappable, it isn't
+      // found by the finder at all.
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+
+      // Login navigates to Home on success.
+      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      // MockAuthRepository derives the display name from the email prefix.
+      expect(find.text('jane'), findsOneWidget);
+      expect(find.text('jane@example.com'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Edit Profile'));
+      await tester.pumpAndSettle();
+
+      // Mock login only populates name/email (Registration is what collects
+      // Mobile/Country) — both are required on this form, so a real save
+      // needs them filled in too, not just the field being changed.
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'),
+        'Jane Doe',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Mobile Number'),
+        '+973 3300 1122',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Country'),
+        'Bahrain',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save Changes'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Jane Doe'), findsOneWidget);
+
+      final signOutButton = find.widgetWithText(OutlinedButton, 'Sign Out');
+      await tester.ensureVisible(signOutButton);
+      await tester.pumpAndSettle();
+      await tester.tap(signOutButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign Out'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Sign in to view your profile, saved details, and inquiry history.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'Continue as Guest works from Login, and Registration completes the '
+    'mock flow',
+    (tester) async {
+      // Taller than the suite's default 800x600 — Login's "Continue as
+      // Guest" button and Registration's fields run past the default
+      // viewport's bottom edge.
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Continue as Guest'));
+      await tester.pumpAndSettle();
+      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          "You're browsing as a guest. Sign in or create an account to save "
+          'your profile.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Register'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'),
+        'John Smith',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'john@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Mobile Number'),
+        '+973 3300 1122',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Country'),
+        'Bahrain',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Confirm Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Create Account'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('John Smith'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Forgot Password screen completes the mock flow', (tester) async {
+    await _pumpPastSplash(tester);
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Forgot Password?'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'jane@example.com',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Send Reset Link'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Check Your Email'), findsOneWidget);
+    expect(find.textContaining('jane@example.com'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Back to Sign In'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+    'Settings screen reaches every sub-screen and the Language/Theme rows '
+    'work',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      expect(find.text('Settings'), findsWidgets);
+
+      await tester.tap(find.text('About Bariqon'));
+      await tester.pumpAndSettle();
+      expect(find.text('About Bariqon'), findsWidgets);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Contact Us'));
+      await tester.pumpAndSettle();
+      expect(find.text('info@bariqon.bh'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Privacy Policy'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('placeholder Privacy Policy'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Terms & Conditions'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('placeholder Terms'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Notifications'));
+      await tester.pumpAndSettle();
+      expect(find.text('Order & Inquiry Updates'), findsOneWidget);
+      await tester.tap(find.byType(Switch).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Theme'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Light').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Light'), findsOneWidget);
+
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+      expect(find.text('العربية'), findsWidgets);
+    },
+  );
+
+  // Same regression guard again, for the Phase 4 auth/profile/settings
+  // screens: Login, Registration, Forgot Password (form + success state),
+  // Profile (guest and signed-in branches), Edit Profile, Settings, and
+  // its five sub-screens.
+  testWidgets(
+    'Auth, Profile, and Settings screens have zero overflow exceptions at '
+    'a narrow width, in EN and AR',
+    (tester) async {
+      // Taller than the other narrow-width regression tests' 740 — auth
+      // screens (logo + message + fields + footer link) run past that at
+      // this width, unlike the shorter catalog/inquiry screens.
+      tester.view.physicalSize = const Size(360, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Login screen, EN then AR.
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Registration screen, EN then AR.
+      await tester.tap(find.text('Register'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Forgot Password screen (form + success state), EN then AR.
+      await tester.tap(find.text('Forgot Password?'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Send Reset Link'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.widgetWithText(FilledButton, 'Back to Sign In'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Sign in for real to reach Profile's Signed In branch + Edit Profile.
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Edit Profile screen, EN then AR.
+      await tester.tap(find.widgetWithText(FilledButton, 'Edit Profile'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Settings + its five sub-screens, EN then AR each.
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      for (final label in [
+        'About Bariqon',
+        'Contact Us',
+        'Privacy Policy',
+        'Terms & Conditions',
+        'Notifications',
+      ]) {
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byIcon(Icons.language));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byIcon(Icons.language));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byType(BackButton));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 }

@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/domain/entities/app_user.dart';
+import '../features/auth/presentation/forgot_password_screen.dart';
+import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/registration_screen.dart';
 import '../features/catalog/presentation/category_detail_screen.dart';
 import '../features/catalog/presentation/category_list_screen.dart';
 import '../features/catalog/presentation/home_screen.dart';
@@ -11,7 +15,14 @@ import '../features/inquiry/domain/entities/inquiry.dart';
 import '../features/inquiry/presentation/inquiry_cart_screen.dart';
 import '../features/inquiry/presentation/inquiry_confirmation_screen.dart';
 import '../features/inquiry/presentation/inquiry_details_form_screen.dart';
+import '../features/profile/presentation/edit_profile_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
+import '../features/settings/presentation/about_screen.dart';
+import '../features/settings/presentation/contact_screen.dart';
+import '../features/settings/presentation/legal_content_screen.dart';
+import '../features/settings/presentation/notification_preferences_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 import 'app_shell.dart';
 import 'splash_screen.dart';
 
@@ -92,6 +103,53 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => InquiryConfirmationScreen(
           inquiry: state.extra as Inquiry?,
         ),
+      ),
+      GoRoute(path: '/auth/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/auth/register',
+        builder: (context, state) => const RegistrationScreen(),
+      ),
+      GoRoute(
+        path: '/auth/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) =>
+            EditProfileScreen(user: state.extra as AppUser?),
+      ),
+      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(
+        path: '/settings/about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/settings/contact',
+        builder: (context, state) => const ContactScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        builder: (context, state) => const NotificationPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/privacy',
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context);
+          return LegalContentScreen(
+            title: l10n.settingsPrivacyTitle,
+            body: l10n.legalPrivacyPolicyBody,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/settings/terms',
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context);
+          return LegalContentScreen(
+            title: l10n.settingsTermsTitle,
+            body: l10n.legalTermsBody,
+          );
+        },
       ),
     ],
   );
