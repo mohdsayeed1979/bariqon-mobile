@@ -4,7 +4,11 @@
 // the Phase 2B brief.
 
 import 'package:bariqon_app/app/app.dart';
+import 'package:bariqon_app/core/config/app_config.dart';
+import 'package:bariqon_app/features/catalog/presentation/product_detail_screen.dart';
+import 'package:bariqon_app/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -50,29 +54,298 @@ void main() {
     await tester.tap(find.text('Categories'));
     await tester.pumpAndSettle();
     expect(find.text('Categories'), findsWidgets);
-    expect(find.text('Coming soon'), findsOneWidget);
+    expect(find.text('Luxury Gift Boxes'), findsOneWidget);
 
     await tester.tap(find.text('Inquiry'));
     await tester.pumpAndSettle();
     expect(find.text('Inquiry'), findsWidgets);
+    expect(find.text('Your inquiry cart is empty.'), findsOneWidget);
 
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('Profile'), findsWidgets);
   });
 
-  testWidgets('Send Inquiry on a product card shows placeholder feedback', (
+  testWidgets('Tapping a category opens its Category Detail screen', (
     tester,
   ) async {
     await _pumpPastSplash(tester);
-    await _scrollHome(tester, 500);
 
-    await tester.tap(find.text('Send Inquiry').first);
-    await tester.pump(); // start the SnackBar animation
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Inquiry cart — coming soon'), findsOneWidget);
+    await tester.tap(find.text('Luxury Gift Boxes').first);
+    await tester.pumpAndSettle();
+
+    // App bar title + banner + breadcrumb all show the category name.
+    expect(find.text('Luxury Gift Boxes'), findsWidgets);
+    expect(find.text('Products'), findsOneWidget);
+    // 3 mock products are assigned to this category — see
+    // mock_catalog_data.dart.
+    expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
   });
+
+  testWidgets('Category Detail search filters the local product list', (
+    tester,
+  ) async {
+    await _pumpPastSplash(tester);
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Luxury Gift Boxes').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
+    expect(find.text('Emerald Ribbon Box'), findsOneWidget);
+
+    // The hint is rendered via InputDecoration, not a separate Text widget
+    // enterText could target — find the TextField itself instead. `.first`
+    // because the sort DropdownMenu also contains a TextField internally;
+    // the search field is the one earlier in the tree.
+    await tester.enterText(find.byType(TextField).first, 'Emerald');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Emerald Ribbon Box'), findsOneWidget);
+    expect(find.text('Woven Fabric Gift Box'), findsNothing);
+  });
+
+  testWidgets('A category with no mock products shows the empty state', (
+    tester,
+  ) async {
+    await _pumpPastSplash(tester);
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('General Trading').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        "We don't have products listed in this category yet — check back "
+        'soon, or explore another category.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Browse Other Categories'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Send Inquiry adds the product to the cart, visible on the Inquiry tab',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+
+      await tester.tap(find.text('Send Inquiry').first);
+      await tester.pump(); // start the SnackBar animation
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Added to your inquiry cart'), findsOneWidget);
+
+      // The Inquiry nav destination badges with the cart's item count.
+      expect(find.text('1'), findsOneWidget);
+
+      await tester.tap(find.text('Inquiry'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Your inquiry cart is empty.'), findsNothing);
+      // First Featured Products card, per mock_catalog_data.dart.
+      expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
+      expect(find.text('1 item selected'), findsOneWidget);
+
+      // Bump the quantity via the stepper.
+      await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+      await tester.pumpAndSettle();
+      expect(find.text('2 items selected'), findsOneWidget);
+
+      // Remove the item — back to the empty state.
+      await tester.tap(find.byIcon(Icons.delete_outline).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Your inquiry cart is empty.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Inquiry form validates required fields and completes the mock flow',
+    (tester) async {
+      // Taller than the suite's default 800x600 — the Cart screen's
+      // "Proceed" button sits right at the bottom edge of the default
+      // viewport, where hit-testing has proven unreliable in this test
+      // environment; more vertical room sidesteps that entirely rather
+      // than fighting it.
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+
+      await tester.tap(find.text('Send Inquiry').first);
+      await tester.pump();
+      // SnackBars live in the app-wide Overlay (from MaterialApp's
+      // Navigator), not scoped to whichever tab showed them — so it stays
+      // on top of every tab's content, absorbing taps aimed at whatever
+      // sits beneath it, until it's gone. Waiting out its auto-dismiss
+      // timer via pump(duration) proved unreliable in this test
+      // environment, so dismiss it directly and deterministically instead.
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Inquiry'));
+      await tester.pumpAndSettle();
+
+      final proceedButton = find.widgetWithText(FilledButton, 'Proceed to Inquiry');
+      await tester.ensureVisible(proceedButton);
+      await tester.pumpAndSettle();
+      await tester.tap(proceedButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Inquiry Details'), findsOneWidget);
+
+      // Submitting empty surfaces validation errors, no navigation.
+      await tester.tap(find.text('Submit Inquiry'));
+      await tester.pumpAndSettle();
+      expect(find.text('This field is required.'), findsWidgets);
+      expect(find.text('Inquiry Details'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'),
+        'Test User',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Corporate Email'),
+        'test@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Mobile Number'),
+        '+973 3362 1109',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Country'),
+        'Bahrain',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Submit Inquiry'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Thank You!'), findsOneWidget);
+      expect(find.textContaining('INQ-'), findsOneWidget);
+
+      // Submitting clears the cart.
+      await tester.tap(find.text('Continue Browsing'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Inquiry'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your inquiry cart is empty.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Tapping a Home product card opens Product Detail with specs and category',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+
+      await tester.tap(find.text('Woven Fabric Gift Box').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Woven Fabric Gift Box'), findsWidgets);
+      expect(find.text('Specifications'), findsOneWidget);
+      expect(find.text('Material'), findsOneWidget);
+      expect(find.text('Origin'), findsOneWidget);
+      // The category chip on Product Detail navigates to that category.
+      await tester.tap(find.text('Luxury Gift Boxes').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Products'), findsOneWidget); // Category Detail heading
+    },
+  );
+
+  testWidgets(
+    'Product Detail shows Related Products and tapping one navigates to it',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+
+      await tester.tap(find.text('Woven Fabric Gift Box').first);
+      await tester.pumpAndSettle();
+
+      // Related Products sits below the gallery/description/specs — off
+      // the default 600px test viewport until scrolled into view.
+      await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Related Products'), findsOneWidget);
+      // Other luxury-gift-boxes products, per mock_catalog_data.dart.
+      expect(find.text('Emerald Ribbon Box'), findsOneWidget);
+
+      await tester.tap(find.text('Emerald Ribbon Box').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Specifications'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Product Detail shows an error state for an unknown product id', (
+    tester,
+  ) async {
+    // Isolated render (not routed through the full app) — this is a
+    // defensive edge case (a bad/stale product id) that the app's own
+    // navigation never actually produces, so there's no in-app tap that
+    // reaches it.
+    await tester.pumpWidget(
+      ProviderScope(
+        // BrandedAppBar watches localeProvider — needs a ProviderScope
+        // ancestor even in this isolated render.
+        child: MaterialApp(
+          locale: AppConfig.defaultLocale,
+          supportedLocales: AppConfig.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const ProductDetailScreen(productId: 'does-not-exist'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Product not found'), findsOneWidget);
+    expect(
+      find.text("We couldn't find that product. It may have been removed."),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'Product Listing screen filters by category and shows all mock products',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+      // Index 1, not 0: the Categories section has its own "View All"
+      // (→ /categories) earlier in the page — this is Featured Products'
+      // (→ /products). ensureVisible scrolls it precisely into the
+      // viewport so the tap's hit-test doesn't land just outside it.
+      final viewAllProducts = find.text('View All').at(1);
+      await tester.ensureVisible(viewAllProducts);
+      await tester.pumpAndSettle();
+
+      await tester.tap(viewAllProducts);
+      await tester.pumpAndSettle();
+
+      expect(find.text('All Products'), findsWidgets);
+      // Products from multiple categories should all be visible unfiltered.
+      expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
+      expect(find.text('Signature Amenity Set'), findsOneWidget);
+
+      // Filter down to just Hospitality Amenities.
+      await tester.tap(find.text('Hospitality Amenities').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Signature Amenity Set'), findsOneWidget);
+      expect(find.text('Woven Fabric Gift Box'), findsNothing);
+    },
+  );
 
   testWidgets('App bar search icon opens the search UI shell', (
     tester,
@@ -151,6 +424,160 @@ void main() {
       expect(tester.takeException(), isNull);
 
       await scrollFullyAndCheck();
+    },
+  );
+
+  // Same regression guard as Home's, applied to the two new Phase 2C
+  // screens: the Categories grid and a Category Detail page (banner,
+  // filter chips, sort dropdown, product Wrap) — at a narrow width, in
+  // both languages, failing on any layout exception.
+  testWidgets(
+    'Categories and Category Detail have zero overflow exceptions at a '
+    'narrow width, in EN and AR',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+
+      await tester.tap(find.text('Categories'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Luxury Gift Boxes').first);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  // Same regression guard again, for the two Phase 2D screens: Product
+  // Listing (search + two filter chip rows + sort dropdown + grid) and
+  // Product Detail (gallery, specs table, Related Products rail) — the
+  // two most visually dense screens added this phase.
+  testWidgets(
+    'Product Listing and Product Detail have zero overflow exceptions at a '
+    'narrow width, in EN and AR',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+      final viewAllProducts = find.text('View All').at(1);
+      await tester.ensureVisible(viewAllProducts);
+      await tester.pumpAndSettle();
+
+      await tester.tap(viewAllProducts);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Woven Fabric Gift Box').first);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  // Same regression guard again, for the three Phase 3 screens: Inquiry
+  // Cart (summary card, quantity stepper, remove), the Inquiry Details
+  // form (six fields + validation errors), and the Confirmation screen
+  // (reference-number card).
+  testWidgets(
+    'Inquiry Cart, Details form and Confirmation have zero overflow '
+    'exceptions at a narrow width, in EN and AR',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+      await _scrollHome(tester, 500);
+
+      await tester.tap(find.text('Send Inquiry').first);
+      await tester.pump();
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Inquiry'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      final proceedButton = find.byType(FilledButton).last;
+      await tester.ensureVisible(proceedButton);
+      await tester.pumpAndSettle();
+      await tester.tap(proceedButton);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Submit empty (in Arabic) to surface validation errors.
+      final formList = find.byType(ListView).first;
+      await tester.drag(formList, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), 'Test User');
+      await tester.enterText(fields.at(2), 'test@example.com');
+      await tester.enterText(fields.at(3), '+973 3362 1109');
+      await tester.enterText(fields.at(4), 'Bahrain');
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.drag(formList, const Offset(0, -400));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('INQ-'), findsOneWidget);
+
+      await tester.tap(find.byType(FilledButton).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     },
   );
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/inquiry/presentation/controllers/inquiry_cart_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 
 /// The permanent app shell — bottom navigation on phones, a
@@ -8,20 +10,25 @@ import '../l10n/generated/app_localizations.dart';
 /// Phase 2A brief's "responsive layout" requirement. Wraps go_router's
 /// [StatefulShellRoute], so each tab keeps its own navigation stack
 /// (switching tabs and back doesn't lose where you were in another tab).
-class AppShell extends StatelessWidget {
+///
+/// Watches [inquiryCartItemCountProvider] (Phase 3) to badge the Inquiry
+/// tab — the one piece of cross-cutting cart state the shell itself needs
+/// to know about.
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   static const double _wideBreakpoint = 600;
 
-  List<_Destination> _destinations(AppLocalizations l10n) => [
+  List<_Destination> _destinations(AppLocalizations l10n, int cartCount) => [
     _Destination(l10n.navHome, Icons.home_outlined, Icons.home),
     _Destination(l10n.navCategories, Icons.category_outlined, Icons.category),
     _Destination(
       l10n.navInquiry,
       Icons.shopping_bag_outlined,
       Icons.shopping_bag,
+      badgeCount: cartCount,
     ),
     _Destination(l10n.navProfile, Icons.person_outline, Icons.person),
   ];
@@ -34,9 +41,10 @@ class AppShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final destinations = _destinations(l10n);
+    final cartCount = ref.watch(inquiryCartItemCountProvider);
+    final destinations = _destinations(l10n, cartCount);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -53,8 +61,8 @@ class AppShell extends StatelessWidget {
                   destinations: [
                     for (final d in destinations)
                       NavigationRailDestination(
-                        icon: Icon(d.icon),
-                        selectedIcon: Icon(d.selectedIcon),
+                        icon: d.badge(Icon(d.icon)),
+                        selectedIcon: d.badge(Icon(d.selectedIcon)),
                         label: Text(d.label),
                       ),
                   ],
@@ -74,8 +82,8 @@ class AppShell extends StatelessWidget {
             destinations: [
               for (final d in destinations)
                 NavigationDestination(
-                  icon: Icon(d.icon),
-                  selectedIcon: Icon(d.selectedIcon),
+                  icon: d.badge(Icon(d.icon)),
+                  selectedIcon: d.badge(Icon(d.selectedIcon)),
                   label: d.label,
                 ),
             ],
@@ -87,9 +95,21 @@ class AppShell extends StatelessWidget {
 }
 
 class _Destination {
-  const _Destination(this.label, this.icon, this.selectedIcon);
+  const _Destination(
+    this.label,
+    this.icon,
+    this.selectedIcon, {
+    this.badgeCount = 0,
+  });
 
   final String label;
   final IconData icon;
   final IconData selectedIcon;
+  final int badgeCount;
+
+  Widget badge(Widget child) => Badge(
+    isLabelVisible: badgeCount > 0,
+    label: Text('$badgeCount'),
+    child: child,
+  );
 }

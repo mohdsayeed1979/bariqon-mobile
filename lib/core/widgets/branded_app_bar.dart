@@ -13,7 +13,12 @@ import '../../l10n/generated/app_localizations.dart';
 /// Standard [AppBar] underneath (not a bespoke layout), so back-button
 /// handling, safe areas, etc. all come for free.
 class BrandedAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  const BrandedAppBar({super.key, required this.title, this.showSearchAction = true});
+  const BrandedAppBar({
+    super.key,
+    required this.title,
+    this.showSearchAction = true,
+    this.extraActions = const [],
+  });
 
   final String title;
 
@@ -21,6 +26,11 @@ class BrandedAppBar extends ConsumerWidget implements PreferredSizeWidget {
   /// Off for screens that don't make sense to search from (e.g. the search
   /// screen itself, once it exists).
   final bool showSearchAction;
+
+  /// Screen-specific actions (e.g. Inquiry Cart's "Clear") — inserted
+  /// before the search/language actions so those stay in a consistent
+  /// trailing position across every screen.
+  final List<Widget> extraActions;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -33,6 +43,7 @@ class BrandedAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(title),
       actions: [
+        ...extraActions,
         if (showSearchAction)
           IconButton(
             icon: const Icon(Icons.search),

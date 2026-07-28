@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/widgets/product_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
 import '../../domain/entities/product.dart';
 
 /// Generic horizontally-scrolling product rail — reused for Featured
-/// Products, New Arrivals, and Best Sellers on Home (same shape, per the
-/// Phase 2B brief, just different mock data/title each time).
+/// Products, New Arrivals, and Best Sellers on Home, and for Related
+/// Products on Product Detail (same shape, per the Phase 2B/2D briefs,
+/// just different mock data/title each time).
 ///
 /// Deliberately no fixed-height container around the row: [ProductCard]
 /// sizes itself to its own content, and [IntrinsicHeight] sizes this
 /// scroller to whatever that turns out to be. A guessed pixel height here
 /// was the exact cause of the RenderFlex overflow flagged in the first
 /// Phase 2B pass — this shape can't drift out of sync with the card again.
-class ProductSection extends StatelessWidget {
+class ProductSection extends ConsumerWidget {
   const ProductSection({
     super.key,
     required this.title,
@@ -26,14 +30,18 @@ class ProductSection extends StatelessWidget {
   final List<Product> products;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(title: title),
+        SectionHeader(
+          title: title,
+          actionLabel: l10n.homeViewAll,
+          onAction: () => context.push('/products'),
+        ),
         const SizedBox(height: AppSpacing.sm),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -54,15 +62,17 @@ class ProductSection extends StatelessWidget {
                         icon: product.icon,
                         placeholderColor: product.placeholderColor,
                         sendInquiryLabel: l10n.homeSendInquiry,
-                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.homeProductDetailSnackbar)),
-                        ),
-                        onSendInquiry: () =>
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.homeSendInquirySnackbar),
-                              ),
+                        onTap: () => context.push('/product/${product.id}'),
+                        onSendInquiry: () {
+                          ref
+                              .read(inquiryCartProvider.notifier)
+                              .addProduct(product);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.homeSendInquirySnackbar),
                             ),
+                          );
+                        },
                       );
                     },
                   ),

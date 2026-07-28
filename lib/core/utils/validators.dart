@@ -23,4 +23,19 @@ class Validators {
     if (!_emailPattern.hasMatch(value.trim())) return message;
     return null;
   }
+
+  /// Deliberately permissive — this validates that a phone number was
+  /// plausibly entered (enough digits), not that it's a real, dialable
+  /// number in a specific country's format. Good enough for a UI-only
+  /// form; a stricter/format-aware check can replace this once real
+  /// submission (and whatever the backend expects) exists.
+  static String? phone(
+    String? value, {
+    String message = 'Enter a valid mobile number',
+  }) {
+    if (value == null || value.trim().isEmpty) return message;
+    final digitCount = value.replaceAll(RegExp(r'[^0-9]'), '').length;
+    if (digitCount < 6) return message;
+    return null;
+  }
 }

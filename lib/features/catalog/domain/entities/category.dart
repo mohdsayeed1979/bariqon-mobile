@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// Plain domain entity — no Flutter-beyond-IconData, no Supabase, no JSON
-/// mapping. Field shape (nameEn/nameAr) deliberately mirrors the confirmed
-/// `cms_categories` bilingual field convention from
-/// docs/API_CONTRACT.md §1, so swapping the mock data source for a real
-/// repository later doesn't change this type. Phase 2B populates instances
+/// mapping. Field shape (nameEn/nameAr/descriptionEn/descriptionAr)
+/// deliberately mirrors the confirmed `cms_categories` bilingual field
+/// convention from docs/API_CONTRACT.md §1, so swapping the mock data
+/// source for a real repository later doesn't change this type. Populated
 /// from local mock data only — see mock_catalog_data.dart.
 @immutable
 class Category {
@@ -12,12 +12,16 @@ class Category {
     required this.id,
     required this.nameEn,
     required this.nameAr,
+    required this.descriptionEn,
+    required this.descriptionAr,
     required this.icon,
   });
 
   final String id;
   final String nameEn;
   final String nameAr;
+  final String descriptionEn;
+  final String descriptionAr;
 
   /// Placeholder visual — real category imagery comes from Supabase Storage
   /// once the backend is connected (Phase 3+); an icon is a deliberate,
@@ -25,4 +29,7 @@ class Category {
   final IconData icon;
 
   String name(Locale locale) => locale.languageCode == 'ar' ? nameAr : nameEn;
+
+  String description(Locale locale) =>
+      locale.languageCode == 'ar' ? descriptionAr : descriptionEn;
 }

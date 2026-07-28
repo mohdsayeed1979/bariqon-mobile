@@ -166,14 +166,9 @@
     "description": "Button label on a product card. UI-only in Phase 2B — no cart/backend yet."
   },
 
-  "homeSendInquirySnackbar": "Inquiry cart — coming soon",
+  "homeSendInquirySnackbar": "Added to your inquiry cart",
   "@homeSendInquirySnackbar": {
-    "description": "Snackbar shown when tapping Send Inquiry, since there's no cart yet."
-  },
-
-  "homeProductDetailSnackbar": "Product details — coming soon",
-  "@homeProductDetailSnackbar": {
-    "description": "Snackbar shown when tapping a product card, since Product Detail doesn't exist yet."
+    "description": "Snackbar shown when tapping Send Inquiry — the product is added to the local Inquiry Cart (Phase 3)."
   },
 
   "homePromoTitle": "Sourcing for a Big Event?",
@@ -249,5 +244,288 @@
   "homeFooterLinkSnackbar": "Coming soon",
   "@homeFooterLinkSnackbar": {
     "description": "Snackbar shown when tapping a footer contact/social icon, none of which are wired up yet."
+  },
+
+  "categoryProductsHeading": "Products",
+  "@categoryProductsHeading": {
+    "description": "Section heading above the product grid on Category Detail."
+  },
+
+  "categorySearchHint": "Search in this category…",
+  "@categorySearchHint": {
+    "description": "Placeholder text in the Category Detail search field."
+  },
+
+  "categorySortLabel": "Sort by",
+  "@categorySortLabel": {
+    "description": "Label on the Category Detail sort dropdown."
+  },
+
+  "categorySortFeatured": "Featured",
+  "@categorySortFeatured": {
+    "description": "Sort option: default/original order."
+  },
+
+  "categorySortPriceLowHigh": "Price: Low to High",
+  "@categorySortPriceLowHigh": {
+    "description": "Sort option."
+  },
+
+  "categorySortPriceHighLow": "Price: High to Low",
+  "@categorySortPriceHighLow": {
+    "description": "Sort option."
+  },
+
+  "categorySortNameAZ": "Name (A–Z)",
+  "@categorySortNameAZ": {
+    "description": "Sort option."
+  },
+
+  "categoryFilterAll": "All",
+  "@categoryFilterAll": {
+    "description": "Filter chip: no price filter applied."
+  },
+
+  "categoryFilterUnder15": "Under BD15",
+  "@categoryFilterUnder15": {
+    "description": "Filter chip: price range."
+  },
+
+  "categoryFilter15to25": "BD15–25",
+  "@categoryFilter15to25": {
+    "description": "Filter chip: price range."
+  },
+
+  "categoryFilterOver25": "Over BD25",
+  "@categoryFilterOver25": {
+    "description": "Filter chip: price range."
+  },
+
+  "categoryEmptyNoProductsTitle": "Nothing here yet",
+  "@categoryEmptyNoProductsTitle": {
+    "description": "Empty state title when a category genuinely has no mock products assigned."
+  },
+
+  "categoryEmptyNoProductsMessage": "We don't have products listed in this category yet — check back soon, or explore another category.",
+  "@categoryEmptyNoProductsMessage": {
+    "description": "Empty state message when a category genuinely has no mock products assigned."
+  },
+
+  "categoryEmptyNoProductsCta": "Browse Other Categories",
+  "@categoryEmptyNoProductsCta": {
+    "description": "Empty state call-to-action when a category genuinely has no mock products assigned."
+  },
+
+  "categoryEmptyFilteredTitle": "No matches",
+  "@categoryEmptyFilteredTitle": {
+    "description": "Empty state title when filters/search exclude every product in a non-empty category."
+  },
+
+  "categoryEmptyFilteredMessage": "No products match your search or filters. Try clearing them.",
+  "@categoryEmptyFilteredMessage": {
+    "description": "Empty state message when filters/search exclude every product in a non-empty category."
+  },
+
+  "categoryEmptyFilteredCta": "Clear Filters",
+  "@categoryEmptyFilteredCta": {
+    "description": "Empty state call-to-action when filters/search exclude every product in a non-empty category."
+  },
+
+  "categoryNotFound": "Category not found.",
+  "@categoryNotFound": {
+    "description": "Defensive fallback if Category Detail is opened with an unknown id."
+  },
+
+  "productsTitle": "All Products",
+  "@productsTitle": {
+    "description": "Title of the Product Listing screen."
+  },
+
+  "productListingSearchHint": "Search all products…",
+  "@productListingSearchHint": {
+    "description": "Placeholder text in the Product Listing search field."
+  },
+
+  "filterCategoryLabel": "Category",
+  "@filterCategoryLabel": {
+    "description": "Label above the category filter chip row on Product Listing."
+  },
+
+  "filterPriceLabel": "Price",
+  "@filterPriceLabel": {
+    "description": "Label above the price filter chip row."
+  },
+
+  "productDetailSpecificationsHeading": "Specifications",
+  "@productDetailSpecificationsHeading": {
+    "description": "Section heading on Product Detail."
+  },
+
+  "productDetailCategoryLabel": "Category",
+  "@productDetailCategoryLabel": {
+    "description": "Label preceding the tappable category chip on Product Detail."
+  },
+
+  "productDetailRelatedHeading": "Related Products",
+  "@productDetailRelatedHeading": {
+    "description": "Section heading for the Related Products rail on Product Detail."
+  },
+
+  "productNotFoundTitle": "Product not found",
+  "@productNotFoundTitle": {
+    "description": "Error state title when Product Detail is opened with an unknown id."
+  },
+
+  "productNotFoundMessage": "We couldn't find that product. It may have been removed.",
+  "@productNotFoundMessage": {
+    "description": "Error state message when Product Detail is opened with an unknown id."
+  },
+
+  "productSpecMaterial": "Material",
+  "@productSpecMaterial": {
+    "description": "Specification row label."
+  },
+
+  "productSpecOrigin": "Origin",
+  "@productSpecOrigin": {
+    "description": "Specification row label."
+  },
+
+  "productSpecPackaging": "Packaging",
+  "@productSpecPackaging": {
+    "description": "Specification row label."
+  },
+
+  "inquiryCartTitle": "Inquiry Cart",
+  "@inquiryCartTitle": {
+    "description": "Inquiry Cart screen app bar title."
+  },
+
+  "inquiryCartClearAction": "Clear",
+  "@inquiryCartClearAction": {
+    "description": "App bar action to clear the whole cart."
+  },
+
+  "inquiryCartClearConfirmTitle": "Clear inquiry cart?",
+  "@inquiryCartClearConfirmTitle": {
+    "description": "Confirmation dialog title before clearing the cart."
+  },
+
+  "inquiryCartClearConfirmMessage": "This removes all items from your inquiry cart. This can't be undone.",
+  "@inquiryCartClearConfirmMessage": {
+    "description": "Confirmation dialog message before clearing the cart."
+  },
+
+  "inquiryCartEmptyMessage": "Your inquiry cart is empty.",
+  "@inquiryCartEmptyMessage": {
+    "description": "Empty state message on Inquiry Cart."
+  },
+
+  "inquiryCartEmptyCta": "Browse Products",
+  "@inquiryCartEmptyCta": {
+    "description": "Empty state call-to-action on Inquiry Cart."
+  },
+
+  "inquiryCartItemsLabel": "{count, plural, one{1 item selected} other{{count} items selected}}",
+  "@inquiryCartItemsLabel": {
+    "description": "Summary label showing how many cart items are selected.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "inquiryEstimatedTotalLabel": "Estimated Total",
+  "@inquiryEstimatedTotalLabel": {
+    "description": "Label above the estimated total price in the Inquiry Summary."
+  },
+
+  "inquiryProceedButton": "Proceed to Inquiry",
+  "@inquiryProceedButton": {
+    "description": "Button on Inquiry Cart leading to the Inquiry Details Form."
+  },
+
+  "inquiryRemoveItemTooltip": "Remove item",
+  "@inquiryRemoveItemTooltip": {
+    "description": "Tooltip on a cart item's remove button."
+  },
+
+  "inquiryFormTitle": "Inquiry Details",
+  "@inquiryFormTitle": {
+    "description": "Inquiry Details Form screen app bar title."
+  },
+
+  "inquiryFormFullName": "Full Name",
+  "@inquiryFormFullName": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormCompany": "Company Name",
+  "@inquiryFormCompany": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormEmail": "Corporate Email",
+  "@inquiryFormEmail": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormMobile": "Mobile Number",
+  "@inquiryFormMobile": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormCountry": "Country",
+  "@inquiryFormCountry": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormNotes": "Notes / Specifications",
+  "@inquiryFormNotes": {
+    "description": "Form field label."
+  },
+
+  "inquiryFormSubmit": "Submit Inquiry",
+  "@inquiryFormSubmit": {
+    "description": "Inquiry Details Form submit button — completes the local mock flow only, no backend call."
+  },
+
+  "validationRequired": "This field is required.",
+  "@validationRequired": {
+    "description": "Generic required-field validation message."
+  },
+
+  "validationEmail": "Enter a valid email address.",
+  "@validationEmail": {
+    "description": "Email format validation message."
+  },
+
+  "validationMobile": "Enter a valid mobile number.",
+  "@validationMobile": {
+    "description": "Mobile number validation message."
+  },
+
+  "inquiryConfirmationTitle": "Inquiry Sent",
+  "@inquiryConfirmationTitle": {
+    "description": "Inquiry Confirmation screen app bar title."
+  },
+
+  "inquiryConfirmationHeading": "Thank You!",
+  "@inquiryConfirmationHeading": {
+    "description": "Inquiry Confirmation success heading."
+  },
+
+  "inquiryConfirmationMessage": "Your inquiry has been received. Our team will get back to you shortly.",
+  "@inquiryConfirmationMessage": {
+    "description": "Inquiry Confirmation success message."
+  },
+
+  "inquiryConfirmationReferenceLabel": "Reference Number",
+  "@inquiryConfirmationReferenceLabel": {
+    "description": "Label above the mock reference number on Inquiry Confirmation."
+  },
+
+  "inquiryConfirmationContinueCta": "Continue Browsing",
+  "@inquiryConfirmationContinueCta": {
+    "description": "Inquiry Confirmation call-to-action back to Home."
   }
 }

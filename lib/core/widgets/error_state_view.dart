@@ -12,11 +12,17 @@ class ErrorStateView extends StatelessWidget {
     this.title,
     this.message,
     this.onRetry,
+    this.actionLabel,
   });
 
   final String? title;
   final String? message;
   final VoidCallback? onRetry;
+
+  /// Overrides the button's default "Retry" label — e.g. "Go Back" when
+  /// the error is an unrecoverable bad id/link rather than something a
+  /// retry could actually fix.
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +51,10 @@ class ErrorStateView extends StatelessWidget {
           ),
           if (onRetry != null) ...[
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: Text(l10n.retry)),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(actionLabel ?? l10n.retry),
+            ),
           ],
         ],
       ),

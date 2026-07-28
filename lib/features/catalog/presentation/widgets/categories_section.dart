@@ -8,9 +8,10 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/mock_catalog_data.dart';
 
 /// Home screen "Featured Categories" rail — mock data only, per the
-/// Phase 2B brief. Tapping a category navigates to the (still
-/// placeholder, Phase 2A) Categories tab — real navigation, not a dead
-/// tap, but no filtering logic exists yet.
+/// Phase 2B brief. Tapping a category opens its real Category Detail
+/// screen (Phase 2C); the section header's "View All" goes to the
+/// Categories tab instead, since that's a browse-everything action rather
+/// than a single category.
 ///
 /// No fixed-height wrapper around the row, matching the fix applied to
 /// ProductSection — [IntrinsicHeight] sizes the scroller to
@@ -47,7 +48,7 @@ class CategoriesSection extends StatelessWidget {
                       return CategoryCard(
                         label: category.name(locale),
                         icon: category.icon,
-                        onTap: () => context.go('/categories'),
+                        onTap: () => context.push('/category/${category.id}'),
                       );
                     },
                   ),
