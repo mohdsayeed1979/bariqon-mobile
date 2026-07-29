@@ -6,6 +6,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/avatar_placeholder.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/responsive_center.dart';
+import '../../../core/error/user_facing_message.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/app_user.dart';
 import '../../auth/domain/entities/auth_session.dart';
@@ -127,11 +128,11 @@ class _SignedInProfile extends ConsumerWidget {
     if (confirmed == true) {
       try {
         await ref.read(authControllerProvider.notifier).signOut();
-      } catch (_) {
+      } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingErrorMessage(context, e))),
+        );
       }
     }
   }

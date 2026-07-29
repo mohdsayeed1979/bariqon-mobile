@@ -213,10 +213,16 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                     );
                     },
                   ),
-                AsyncError() => Padding(
+                AsyncError(:final error) => Padding(
                     key: const ValueKey('error'),
                     padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Center(child: ErrorStateView(onRetry: _retry)),
+                    child: Center(
+                      child: ErrorStateView.forError(
+                        context,
+                        error,
+                        onRetry: _retry,
+                      ),
+                    ),
                   ),
                 _ => ListView(
                     key: const ValueKey('loading'),

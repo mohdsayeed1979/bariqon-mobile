@@ -439,6 +439,26 @@
     "description": "Tooltip on a cart item's remove button."
   },
 
+  "quantityDecreaseTooltip": "Decrease quantity",
+  "@quantityDecreaseTooltip": {
+    "description": "Accessibility label for the quantity stepper's minus button."
+  },
+
+  "quantityIncreaseTooltip": "Increase quantity",
+  "@quantityIncreaseTooltip": {
+    "description": "Accessibility label for the quantity stepper's plus button."
+  },
+
+  "passwordShowTooltip": "Show password",
+  "@passwordShowTooltip": {
+    "description": "Accessibility label for the password field's visibility toggle when the password is currently hidden."
+  },
+
+  "passwordHideTooltip": "Hide password",
+  "@passwordHideTooltip": {
+    "description": "Accessibility label for the password field's visibility toggle when the password is currently visible."
+  },
+
   "inquiryFormTitle": "Inquiry Details",
   "@inquiryFormTitle": {
     "description": "Inquiry Details Form screen app bar title."

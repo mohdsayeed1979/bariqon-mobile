@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/generated/app_localizations.dart';
+
 /// A password [TextFormField] with a visibility toggle — reused across
 /// Sign In and Registration rather than each screen managing its own
 /// obscure-text state and eye icon.
@@ -26,6 +28,7 @@ class _PasswordFieldState extends State<PasswordField> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return TextFormField(
       controller: widget.controller,
       obscureText: _obscure,
@@ -35,6 +38,7 @@ class _PasswordFieldState extends State<PasswordField> {
         labelText: widget.label,
         suffixIcon: IconButton(
           icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+          tooltip: _obscure ? l10n.passwordShowTooltip : l10n.passwordHideTooltip,
           onPressed: () => setState(() => _obscure = !_obscure),
         ),
       ),

@@ -93,7 +93,9 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
       ),
       error: (error, stackTrace) => _CategoryDetailScaffold(
         title: l10n.navCategories,
-        body: Center(child: ErrorStateView(onRetry: _retry)),
+        body: Center(
+          child: ErrorStateView.forError(context, error, onRetry: _retry),
+        ),
       ),
       data: (catalog) {
         final (categories, products) = catalog;

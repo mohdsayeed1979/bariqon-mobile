@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../error/user_facing_message.dart';
 
 /// Scoped error surface with a retry action, per docs/DESIGN_SYSTEM.md §8
 /// and docs/IMPLEMENTATION_ROADMAP.md §12 — used inline within a screen
@@ -14,6 +15,25 @@ class ErrorStateView extends StatelessWidget {
     this.onRetry,
     this.actionLabel,
   });
+
+  /// Builds from a caught error/[Failure] rather than a caller-chosen
+  /// message — a [NetworkFailure] reads as "check your connection" instead
+  /// of the generic fallback, which matters to a user (one says try later,
+  /// the other says check your wifi). Other [Failure] subtypes still fall
+  /// through to the generic message: their `.message` strings are plain
+  /// English, not localized or written for end users — see failure.dart.
+  factory ErrorStateView.forError(
+    BuildContext context,
+    Object error, {
+    VoidCallback? onRetry,
+    String? actionLabel,
+  }) {
+    return ErrorStateView(
+      message: userFacingErrorMessage(context, error),
+      onRetry: onRetry,
+      actionLabel: actionLabel,
+    );
+  }
 
   final String? title;
   final String? message;

@@ -42,14 +42,35 @@ class ProductImage extends StatelessWidget {
     final url = imageUrl;
     if (url == null || url.isEmpty) return _placeholder();
 
-    return CachedNetworkImage(
-      imageUrl: url,
-      fit: fit,
-      width: double.infinity,
-      height: double.infinity,
-      fadeInDuration: const Duration(milliseconds: 200),
-      placeholder: (context, _) => _placeholder(),
-      errorWidget: (context, _, _) => _placeholder(),
+    // Decodes (and caches) the bitmap at the size it's actually displayed
+    // at, not the source photo's full resolution — Supabase Storage
+    // product photos can be well over 1000px on a side, which uncapped
+    // would eat several MB of decoded memory *per card* in a 200+ product
+    // grid. LayoutBuilder gives the real render size for whatever context
+    // this is used in (card thumbnail, product gallery, ...) so this
+    // adapts automatically instead of needing per-call-site tuning.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final cacheWidth = constraints.maxWidth.isFinite
+            ? (constraints.maxWidth * dpr).round()
+            : null;
+        final cacheHeight = constraints.maxHeight.isFinite
+            ? (constraints.maxHeight * dpr).round()
+            : null;
+
+        return CachedNetworkImage(
+          imageUrl: url,
+          fit: fit,
+          width: double.infinity,
+          height: double.infinity,
+          memCacheWidth: cacheWidth,
+          memCacheHeight: cacheHeight,
+          fadeInDuration: const Duration(milliseconds: 200),
+          placeholder: (context, _) => _placeholder(),
+          errorWidget: (context, _, _) => _placeholder(),
+        );
+      },
     );
   }
 }

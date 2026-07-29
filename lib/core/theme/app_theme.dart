@@ -68,6 +68,22 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
         ),
       ),
+      // Was missing entirely — every FilledButton/FilledButton.tonal (the
+      // primary CTA on most forms) fell back to Material 3's 40dp default
+      // minimum height unless a screen manually wrapped it in a
+      // fixed-height SizedBox, which not all of them did (e.g. Profile's
+      // "Edit Profile"/"Sign Out" buttons) — under the 48dp accessible
+      // tap-target guideline. `minimumSize` (not a fixed size) still lets
+      // the button grow taller if a translation or larger text-scale
+      // setting needs more room, unlike a hard-coded SizedBox height.
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          minimumSize: const Size.fromHeight(48),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.primary,

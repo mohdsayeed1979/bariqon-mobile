@@ -6,6 +6,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/responsive_center.dart';
+import '../../../core/error/user_facing_message.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
@@ -36,14 +37,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSubmitting = true);
-    await ref
-        .read(authControllerProvider.notifier)
-        .sendPasswordReset(_emailController.text.trim());
-    if (!mounted) return;
-    setState(() {
-      _isSubmitting = false;
-      _submitted = true;
-    });
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .sendPasswordReset(_emailController.text.trim());
+      if (!mounted) return;
+      setState(() => _submitted = true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(context, e))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override

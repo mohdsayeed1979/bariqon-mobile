@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/generated/app_localizations.dart';
+
 /// Compact +/- quantity control, per the Phase 3 brief's "update
 /// quantities" requirement — used on Inquiry Cart line items today,
 /// generic enough to reuse anywhere a bounded integer needs stepping.
@@ -19,6 +21,7 @@ class QuantityStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final canDecrease = quantity > minQuantity;
     final canIncrease = maxQuantity == null || quantity < maxQuantity!;
 
@@ -27,6 +30,7 @@ class QuantityStepper extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.remove_circle_outline),
+          tooltip: l10n.quantityDecreaseTooltip,
           visualDensity: VisualDensity.compact,
           onPressed: canDecrease ? () => onChanged(quantity - 1) : null,
         ),
@@ -40,6 +44,7 @@ class QuantityStepper extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
+          tooltip: l10n.quantityIncreaseTooltip,
           visualDensity: VisualDensity.compact,
           onPressed: canIncrease ? () => onChanged(quantity + 1) : null,
         ),

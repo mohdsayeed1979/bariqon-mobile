@@ -32,7 +32,7 @@ class AsyncValueView<T> extends StatelessWidget {
           const Center(child: CircularProgressIndicator()),
       error: (err, stack) =>
           error?.call(err, stack) ??
-          Center(child: ErrorStateView(onRetry: onRetry)),
+          Center(child: ErrorStateView.forError(context, err, onRetry: onRetry)),
     );
   }
 }

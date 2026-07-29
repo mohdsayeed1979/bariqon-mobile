@@ -7,6 +7,7 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/password_field.dart';
 import '../../../core/widgets/responsive_center.dart';
+import '../../../core/error/user_facing_message.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/auth_exceptions.dart';
@@ -68,11 +69,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         SnackBar(content: Text(l10n.authRegisterCheckEmailMessage(email))),
       );
       context.canPop() ? context.pop() : context.go('/auth/login');
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(context, e))),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

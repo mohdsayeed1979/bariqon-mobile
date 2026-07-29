@@ -77,7 +77,9 @@ class CategoriesSection extends ConsumerWidget {
           ),
           error: (error, stackTrace) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: ErrorStateView(
+            child: ErrorStateView.forError(
+              context,
+              error,
               onRetry: () => ref.invalidate(categoriesProvider),
             ),
           ),

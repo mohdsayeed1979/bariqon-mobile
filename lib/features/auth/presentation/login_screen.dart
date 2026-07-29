@@ -8,6 +8,7 @@ import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/brand_logo.dart';
 import '../../../core/widgets/password_field.dart';
 import '../../../core/widgets/responsive_center.dart';
+import '../../../core/error/user_facing_message.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
@@ -37,7 +38,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    final l10n = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSubmitting = true);
@@ -48,11 +48,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       if (!mounted) return;
       context.go('/home');
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(context, e))),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

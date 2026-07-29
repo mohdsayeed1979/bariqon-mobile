@@ -85,7 +85,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (error, stackTrace) => Center(
-                        child: ErrorStateView(
+                        child: ErrorStateView.forError(
+                          context,
+                          error,
                           onRetry: () => ref.invalidate(productsProvider),
                         ),
                       ),
