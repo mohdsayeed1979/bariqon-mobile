@@ -39,13 +39,13 @@ class CategoryCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.10),
+                    theme.colorScheme.primary.withValues(alpha: 0.10),
                     AppColors.gold.withValues(alpha: 0.16),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
-              child: Icon(icon, size: 30, color: AppColors.primary),
+              child: Icon(icon, size: 30, color: theme.colorScheme.primary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

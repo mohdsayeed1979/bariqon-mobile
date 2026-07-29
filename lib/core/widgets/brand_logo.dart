@@ -44,15 +44,33 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final image = Image.asset(
+      _assetPath,
+      fit: BoxFit.contain,
+      semanticLabel: 'Bariqon',
+    );
+    // The source JPEG has its white background baked in (not transparent)
+    // — invisible against the app's own white light-mode surfaces, but a
+    // stark white rectangle wherever it lands on a dark-mode surface (the
+    // Home footer, About screen). A light backing card contains it
+    // properly there; in light mode it's white-on-white, i.e. no visible
+    // change at all.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: padding,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: size.maxWidth),
-        child: Image.asset(
-          _assetPath,
-          fit: BoxFit.contain,
-          semanticLabel: 'Bariqon',
-        ),
+        child: isDark
+            ? Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: image,
+              )
+            : image,
       ),
     );
   }

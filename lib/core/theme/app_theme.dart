@@ -25,10 +25,23 @@ class AppTheme {
   }
 
   static ThemeData dark({required bool isRtl}) {
+    // Unlike light(), does NOT force `primary` to the exact
+    // AppColors.primary value. That very dark forest green was tuned for
+    // legibility on a white background (confirmed against bariqon.bh's own
+    // CSS); forced onto a near-black background too, it lands around a
+    // 1.9:1 contrast ratio against surfaceDark — under WCAG's 3:1 minimum
+    // for UI text/icons. Leaving `primary` unset lets Material 3's tonal
+    // palette derive a properly-contrasted dark-mode green from the same
+    // seed hue instead — still reads as "the brand green", just legible.
+    // `secondary`/`tertiary` keep the exact brand gold tones: gold is
+    // high-luminance and already contrasts fine on a dark background, so
+    // there's no equivalent problem to fix there, and overriding them
+    // avoids Material 3 desaturating the accent away from gold entirely
+    // (fromSeed's default secondary/tertiary are muted variants of the
+    // seed's own hue, not an independent brand color).
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-      primary: AppColors.primary,
       secondary: AppColors.gold,
       tertiary: AppColors.goldLight,
       error: AppColors.error,

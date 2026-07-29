@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_sizes.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
@@ -93,7 +92,7 @@ class _ReasonCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(reason.icon, color: AppColors.primary),
+          Icon(reason.icon, color: theme.colorScheme.primary),
           const SizedBox(height: AppSpacing.sm),
           Text(
             reason.title,

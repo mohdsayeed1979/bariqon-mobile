@@ -54,12 +54,12 @@ class _CategoryGridCardState extends State<CategoryGridCard> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primary.withValues(alpha: 0.12),
+                theme.colorScheme.primary.withValues(alpha: 0.12),
                 AppColors.gold.withValues(alpha: 0.20),
               ],
             ),
           ),
-          child: Icon(widget.icon, size: 42, color: AppColors.primary),
+          child: Icon(widget.icon, size: 42, color: theme.colorScheme.primary),
         ),
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),

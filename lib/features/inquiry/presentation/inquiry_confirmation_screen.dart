@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/responsive_center.dart';
@@ -49,13 +48,13 @@ class InquiryConfirmationScreen extends StatelessWidget {
                         width: 96,
                         height: 96,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check_circle,
                           size: 64,
-                          color: AppColors.primary,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
@@ -93,7 +92,7 @@ class InquiryConfirmationScreen extends StatelessWidget {
                             Text(
                               inquiry!.referenceNumber,
                               style: theme.textTheme.titleLarge?.copyWith(
-                                color: AppColors.primary,
+                                color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
