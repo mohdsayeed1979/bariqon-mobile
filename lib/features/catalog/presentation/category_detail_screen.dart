@@ -9,6 +9,7 @@ import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/filter_chip_row.dart';
 import '../../../core/widgets/product_results_view.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../core/widgets/sort_dropdown.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/catalog_providers.dart';
@@ -75,6 +76,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
       loading: () => _CategoryDetailScaffold(
         title: l10n.navCategories,
         body: ListView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             ProductResultsView(
@@ -136,10 +138,10 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
             showSearchAction: false,
           ),
           body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: ListView(
+            child: ResponsiveCenter(
+              width: ContentWidth.grid,
+              child: ListView(
+                      physics: const BouncingScrollPhysics(),
                       key: const ValueKey('loaded'),
                       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       children: [
@@ -260,7 +262,6 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                     ),
               ),
             ),
-          ),
         );
       },
     );
@@ -278,12 +279,7 @@ class _CategoryDetailScaffold extends StatelessWidget {
     return Scaffold(
       appBar: BrandedAppBar(title: title, showSearchAction: false),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: body,
-          ),
-        ),
+        child: ResponsiveCenter(width: ContentWidth.grid, child: body),
       ),
     );
   }

@@ -91,6 +91,11 @@
     "description": "Placeholder text in the search field. The field is UI-only in Phase 2A — no query is executed yet."
   },
 
+  "searchPromptMessage": "Start typing to search our products.",
+  "@searchPromptMessage": {
+    "description": "Shown on the Search screen before the user has typed anything."
+  },
+
   "toggleLanguageTooltip": "Switch language",
   "@toggleLanguageTooltip": {
     "description": "Tooltip/semantic label for the temporary language toggle in the app bar, ahead of the real Language Selector screen (Settings, later phase)."

@@ -9,6 +9,7 @@ import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/price_tag.dart';
 import '../../../core/widgets/product_image.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
 import 'controllers/catalog_providers.dart';
@@ -75,7 +76,10 @@ class ProductDetailScreen extends ConsumerWidget {
 
         return Scaffold(
       appBar: BrandedAppBar(title: product.name(locale), showSearchAction: false),
-      body: ListView(
+      body: ResponsiveCenter(
+        width: ContentWidth.wide,
+        child: ListView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
         children: [
           images.isEmpty
@@ -179,6 +183,7 @@ class ProductDetailScreen extends ConsumerWidget {
               products: related,
             ),
         ],
+        ),
       ),
     );
       },

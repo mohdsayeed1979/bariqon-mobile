@@ -8,6 +8,7 @@ import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/filter_chip_row.dart';
 import '../../../core/widgets/product_results_view.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../core/widgets/sort_dropdown.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/catalog_providers.dart';
@@ -69,10 +70,9 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.productsTitle, showSearchAction: false),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: AnimatedSwitcher(
+        child: ResponsiveCenter(
+          width: ContentWidth.grid,
+          child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
               child: switch (catalogAsync) {
                 AsyncData(:final value) => Builder(
@@ -97,6 +97,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                           _sort != ProductSortOption.featured;
 
                       return ListView(
+                      physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       children: [
                         Padding(
@@ -219,6 +220,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                   ),
                 _ => ListView(
                     key: const ValueKey('loading'),
+                    physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     children: [
                       ProductResultsView(
@@ -236,7 +238,6 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/category_grid_card.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../core/widgets/skeleton_category_grid_card.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/entities/category.dart';
@@ -25,22 +26,18 @@ class CategoryListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.navCategories),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            // Keeps the grid from stretching edge-to-edge on tablet/desktop
-            // widths — mobile-first, tablet-ready per the Phase 2C brief.
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: AsyncValueView(
-                value: categoriesAsync,
-                onRetry: () => ref.invalidate(categoriesProvider),
-                loading: () =>
-                    const _CategoryGridSkeleton(key: ValueKey('loading')),
-                data: (categories) => _CategoryGrid(
-                  key: const ValueKey('loaded'),
-                  categories: categories,
-                ),
+        child: ResponsiveCenter(
+          width: ContentWidth.grid,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: AsyncValueView(
+              value: categoriesAsync,
+              onRetry: () => ref.invalidate(categoriesProvider),
+              loading: () =>
+                  const _CategoryGridSkeleton(key: ValueKey('loading')),
+              data: (categories) => _CategoryGrid(
+                key: const ValueKey('loaded'),
+                categories: categories,
               ),
             ),
           ),
@@ -59,6 +56,7 @@ class _CategoryGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Wrap(
         alignment: WrapAlignment.center,
@@ -84,6 +82,7 @@ class _CategoryGridSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Wrap(
         alignment: WrapAlignment.center,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/catalog_providers.dart';
 import 'utils/catalog_selectors.dart';
@@ -60,50 +62,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         opacity: _fade,
         child: SlideTransition(
           position: _slide,
-          child: ListView(
-            key: const Key('home_scroll_view'),
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 24),
-            children: [
-              const HeroBannerSection(),
-              const WelcomeSection(),
-              const HomeSearchBar(),
-              const SizedBox(height: 8),
-              const CategoriesSection(),
-              const SizedBox(height: 24),
-              AsyncValueView(
-                value: productsAsync,
-                onRetry: () => ref.invalidate(productsProvider),
-                loading: () => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 48),
-                  child: Center(child: CircularProgressIndicator()),
+          child: ResponsiveCenter(
+            width: ContentWidth.grid,
+            child: ListView(
+              key: const Key('home_scroll_view'),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+              children: [
+                const HeroBannerSection(),
+                const WelcomeSection(),
+                const HomeSearchBar(),
+                const SizedBox(height: AppSpacing.sm),
+                const CategoriesSection(),
+                const SizedBox(height: AppSpacing.xl),
+                AsyncValueView(
+                  value: productsAsync,
+                  onRetry: () => ref.invalidate(productsProvider),
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  data: (products) => Column(
+                    children: [
+                      ProductSection(
+                        title: l10n.homeSectionFeaturedProducts,
+                        products: featuredProducts(products),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      ProductSection(
+                        title: l10n.homeSectionNewArrivals,
+                        products: newArrivalProducts(products),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      const PromoBannerSection(),
+                      const SizedBox(height: AppSpacing.xl),
+                      ProductSection(
+                        title: l10n.homeSectionBestSellers,
+                        products: bestSellerProducts(products),
+                      ),
+                    ],
+                  ),
                 ),
-                data: (products) => Column(
-                  children: [
-                    ProductSection(
-                      title: l10n.homeSectionFeaturedProducts,
-                      products: featuredProducts(products),
-                    ),
-                    const SizedBox(height: 24),
-                    ProductSection(
-                      title: l10n.homeSectionNewArrivals,
-                      products: newArrivalProducts(products),
-                    ),
-                    const SizedBox(height: 24),
-                    const PromoBannerSection(),
-                    const SizedBox(height: 24),
-                    ProductSection(
-                      title: l10n.homeSectionBestSellers,
-                      products: bestSellerProducts(products),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              const WhyChooseUsSection(),
-              const SizedBox(height: 24),
-              const HomeFooterSection(),
-            ],
+                const SizedBox(height: AppSpacing.xl),
+                const WhyChooseUsSection(),
+                const SizedBox(height: AppSpacing.xl),
+                const HomeFooterSection(),
+              ],
+            ),
           ),
         ),
       ),
