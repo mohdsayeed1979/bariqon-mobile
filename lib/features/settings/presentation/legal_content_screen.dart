@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 
 /// Generic scrollable legal-text screen — Privacy Policy and Terms &
 /// Conditions are the same shape (title + long-form body), so both reuse
@@ -21,14 +22,18 @@ class LegalContentScreen extends StatelessWidget {
     return Scaffold(
       appBar: BrandedAppBar(title: title, showSearchAction: false),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            Text(
-              body,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
-            ),
-          ],
+        child: ResponsiveCenter(
+          width: ContentWidth.wide,
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            children: [
+              Text(
+                body,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              ),
+            ],
+          ),
         ),
       ),
     );

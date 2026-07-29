@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/settings_controller.dart';
 
@@ -23,27 +24,31 @@ class NotificationPreferencesScreen extends ConsumerWidget {
         showSearchAction: false,
       ),
       body: SafeArea(
-        child: ListView(
-          children: [
-            SwitchListTile(
-              value: prefs.orderAndInquiryUpdates,
-              onChanged: notifier.setOrderAndInquiryUpdates,
-              title: Text(l10n.notificationOrderUpdatesTitle),
-              subtitle: Text(l10n.notificationOrderUpdatesSubtitle),
-            ),
-            SwitchListTile(
-              value: prefs.promotionsAndOffers,
-              onChanged: notifier.setPromotionsAndOffers,
-              title: Text(l10n.notificationPromotionsTitle),
-              subtitle: Text(l10n.notificationPromotionsSubtitle),
-            ),
-            SwitchListTile(
-              value: prefs.newArrivals,
-              onChanged: notifier.setNewArrivals,
-              title: Text(l10n.notificationNewArrivalsTitle),
-              subtitle: Text(l10n.notificationNewArrivalsSubtitle),
-            ),
-          ],
+        child: ResponsiveCenter(
+          width: ContentWidth.wide,
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            children: [
+              SwitchListTile(
+                value: prefs.orderAndInquiryUpdates,
+                onChanged: notifier.setOrderAndInquiryUpdates,
+                title: Text(l10n.notificationOrderUpdatesTitle),
+                subtitle: Text(l10n.notificationOrderUpdatesSubtitle),
+              ),
+              SwitchListTile(
+                value: prefs.promotionsAndOffers,
+                onChanged: notifier.setPromotionsAndOffers,
+                title: Text(l10n.notificationPromotionsTitle),
+                subtitle: Text(l10n.notificationPromotionsSubtitle),
+              ),
+              SwitchListTile(
+                value: prefs.newArrivals,
+                onChanged: notifier.setNewArrivals,
+                title: Text(l10n.notificationNewArrivalsTitle),
+                subtitle: Text(l10n.notificationNewArrivalsSubtitle),
+              ),
+            ],
+          ),
         ),
       ),
     );

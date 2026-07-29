@@ -6,6 +6,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/inquiry_summary_card.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/inquiry_cart_controller.dart';
 import 'widgets/inquiry_cart_item_tile.dart';
@@ -72,14 +73,14 @@ class InquiryCartScreen extends ConsumerWidget {
                   onAction: () => context.push('/products'),
                 ),
               )
-            : Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: Column(
+            : ResponsiveCenter(
+                width: ContentWidth.wide,
+                child: Column(
                     children: [
                       const SizedBox(height: AppSpacing.sm),
                       Expanded(
                         child: ListView.separated(
+                          physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.sm,
                           ),
@@ -124,7 +125,6 @@ class InquiryCartScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                ),
               ),
       ),
     );

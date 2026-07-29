@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/brand_logo.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
 /// About Bariqon screen, per the Phase 4 brief — premium layout using the
@@ -20,7 +21,10 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.settingsAboutTitle, showSearchAction: false),
       body: SafeArea(
-        child: ListView(
+        child: ResponsiveCenter(
+          width: ContentWidth.wide,
+          child: ListView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             const Center(child: BrandLogo(size: BrandLogoSize.medium)),
@@ -49,6 +53,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

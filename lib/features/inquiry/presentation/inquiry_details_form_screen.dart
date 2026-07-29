@@ -8,6 +8,7 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/inquiry_summary_card.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/inquiry_cart_controller.dart';
 import '../domain/entities/inquiry.dart';
@@ -102,12 +103,12 @@ class _InquiryDetailsFormScreenState
                   onAction: () => context.go('/products'),
                 ),
               )
-            : Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: Form(
+            : ResponsiveCenter(
+                width: ContentWidth.wide,
+                child: Form(
                     key: _formKey,
                     child: ListView(
+                      physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       children: [
                         InquirySummaryCard(
@@ -174,7 +175,6 @@ class _InquiryDetailsFormScreenState
                       ],
                     ),
                   ),
-                ),
               ),
       ),
     );

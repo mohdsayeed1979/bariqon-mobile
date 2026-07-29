@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
 /// Contact Us screen, per the Phase 4 brief — display-only contact
@@ -25,7 +26,10 @@ class ContactScreen extends StatelessWidget {
         showSearchAction: false,
       ),
       body: SafeArea(
-        child: ListView(
+        child: ResponsiveCenter(
+          width: ContentWidth.wide,
+          child: ListView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           children: [
             ListTile(
@@ -49,6 +53,7 @@ class ContactScreen extends StatelessWidget {
               subtitle: const Text(_address),
             ),
           ],
+          ),
         ),
       ),
     );

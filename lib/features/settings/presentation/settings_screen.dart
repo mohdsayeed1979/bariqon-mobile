@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/app.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../core/widgets/settings_list_tile.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/settings_controller.dart';
@@ -67,7 +68,10 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.settingsTitle, showSearchAction: false),
-      body: ListView(
+      body: ResponsiveCenter(
+        width: ContentWidth.wide,
+        child: ListView(
+        physics: const BouncingScrollPhysics(),
         children: [
           SettingsListTile(
             icon: Icons.translate_outlined,
@@ -117,6 +121,7 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/settings/terms'),
           ),
         ],
+        ),
       ),
     );
   }

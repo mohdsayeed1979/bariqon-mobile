@@ -5,6 +5,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/entities/inquiry.dart';
 
@@ -29,8 +30,11 @@ class InquiryConfirmationScreen extends StatelessWidget {
         showSearchAction: false,
       ),
       body: SafeArea(
-        child: Center(
-          child: Padding(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ResponsiveCenter(
+            width: ContentWidth.narrow,
+            child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: inquiry == null
                 ? ErrorStateView(
@@ -107,6 +111,7 @@ class InquiryConfirmationScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+          ),
           ),
         ),
       ),

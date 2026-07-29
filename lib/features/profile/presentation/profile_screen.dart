@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/avatar_placeholder.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/app_user.dart';
 import '../../auth/domain/entities/auth_session.dart';
@@ -58,7 +59,8 @@ class _SignedOutPrompt extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Center(
+    return ResponsiveCenter(
+      width: ContentWidth.narrow,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
@@ -139,7 +141,10 @@ class _SignedInProfile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return ListView(
+    return ResponsiveCenter(
+      width: ContentWidth.narrow,
+      child: ListView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
         Center(
@@ -204,6 +209,7 @@ class _SignedInProfile extends ConsumerWidget {
           child: Text(l10n.profileSignOutAction),
         ),
       ],
+      ),
     );
   }
 }
