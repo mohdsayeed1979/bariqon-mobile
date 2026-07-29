@@ -76,7 +76,8 @@ class ProductDetailScreen extends ConsumerWidget {
 
         return Scaffold(
       appBar: BrandedAppBar(title: product.name(locale), showSearchAction: false),
-      body: ResponsiveCenter(
+      body: SafeArea(
+        child: ResponsiveCenter(
         width: ContentWidth.wide,
         child: ListView(
         physics: const BouncingScrollPhysics(),
@@ -183,6 +184,7 @@ class ProductDetailScreen extends ConsumerWidget {
               products: related,
             ),
         ],
+        ),
         ),
       ),
     );

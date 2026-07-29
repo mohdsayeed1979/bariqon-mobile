@@ -148,6 +148,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                       label: l10n.authConfirmPasswordLabel,
                       controller: _confirmPasswordController,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
                       validator: (v) {
                         final required = Validators.required(
                           v,

@@ -153,6 +153,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 label: l10n.inquiryFormCountry,
                 controller: _countryController,
                 textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
                 validator: (v) =>
                     Validators.required(v, message: l10n.validationRequired),
               ),

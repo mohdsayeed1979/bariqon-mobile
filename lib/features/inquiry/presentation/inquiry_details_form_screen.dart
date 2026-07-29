@@ -162,6 +162,7 @@ class _InquiryDetailsFormScreenState
                           controller: _notesController,
                           maxLines: 4,
                           textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submit(),
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         SizedBox(

@@ -36,7 +36,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.searchTitle, showSearchAction: false),
-      body: ResponsiveCenter(
+      body: SafeArea(
+        child: ResponsiveCenter(
         width: ContentWidth.wide,
         child: Column(
           children: [
@@ -94,6 +95,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                     ),
             ),
           ],
+        ),
         ),
       ),
     );

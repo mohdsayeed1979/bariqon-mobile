@@ -23,6 +23,7 @@ class AppTextField extends StatelessWidget {
     this.validator,
     this.autovalidateMode,
     this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   final String label;
@@ -37,6 +38,11 @@ class AppTextField extends StatelessWidget {
   final AutovalidateMode? autovalidateMode;
   final TextInputAction? textInputAction;
 
+  /// Fires on the keyboard's "Next"/"Done" action — screens set this on
+  /// their last field so pressing "Done" submits the form instead of just
+  /// dismissing the keyboard and leaving the user to find the button.
+  final ValueChanged<String>? onFieldSubmitted;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -49,6 +55,7 @@ class AppTextField extends StatelessWidget {
       validator: validator,
       autovalidateMode: autovalidateMode,
       textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       decoration: InputDecoration(labelText: label, errorText: errorText),
     );
   }

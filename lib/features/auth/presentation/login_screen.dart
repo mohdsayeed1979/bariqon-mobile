@@ -104,6 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       label: l10n.authPasswordLabel,
                       controller: _passwordController,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
                       validator: (v) =>
                           Validators.required(v, message: l10n.validationRequired),
                     ),
