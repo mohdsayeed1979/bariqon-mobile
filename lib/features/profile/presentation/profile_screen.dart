@@ -123,7 +123,14 @@ class _SignedInProfile extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      ref.read(authControllerProvider.notifier).signOut();
+      try {
+        await ref.read(authControllerProvider.notifier).signOut();
+      } catch (_) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+      }
     }
   }
 

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_sizes.dart';
 import 'price_tag.dart';
+import 'product_image.dart';
 
 /// Product tile for horizontally-scrolling product rails, per
 /// docs/DESIGN_SYSTEM.md §8 and docs/SCREEN_SPECIFICATIONS.md §3/§18.
-/// [icon]/[placeholderColor] stand in for a product photo — real product
-/// imagery is always remote (Supabase Storage) per
-/// docs/SUPABASE_INTEGRATION.md §5, and doesn't exist until that's
-/// connected in a later phase.
+/// Shows the product's real photo ([imageUrl], Supabase Storage) via
+/// [ProductImage]; [icon]/[placeholderColor] are its loading/error
+/// fallback.
 ///
 /// Sizes itself to its own content (`mainAxisSize.min` throughout,
 /// `maxLines`/fixed heights on every text row) rather than depending on a
@@ -28,6 +28,7 @@ class ProductCard extends StatelessWidget {
     required this.icon,
     required this.placeholderColor,
     required this.sendInquiryLabel,
+    this.imageUrl,
     this.onSendInquiry,
     this.onTap,
   });
@@ -37,6 +38,7 @@ class ProductCard extends StatelessWidget {
   final double price;
   final IconData icon;
   final Color placeholderColor;
+  final String? imageUrl;
   final String sendInquiryLabel;
   final VoidCallback? onSendInquiry;
   final VoidCallback? onTap;
@@ -59,18 +61,10 @@ class ProductCard extends StatelessWidget {
               // placeholder, not a stand-in photo (see class doc).
               AspectRatio(
                 aspectRatio: 1.15,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        placeholderColor.withValues(alpha: 0.85),
-                        placeholderColor.withValues(alpha: 0.55),
-                      ],
-                    ),
-                  ),
-                  child: Icon(icon, size: 48, color: Colors.white),
+                child: ProductImage(
+                  imageUrl: imageUrl,
+                  icon: icon,
+                  placeholderColor: placeholderColor,
                 ),
               ),
               Padding(

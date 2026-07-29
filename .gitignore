@@ -38,9 +38,13 @@ migrate_working_dir/
 # flutter.generate: true)
 /lib/l10n/generated/
 
-# Real environment values (Supabase URL/anon key) go here via
-# --dart-define-from-file=env.json — never committed. See
-# env.example.json for the required shape.
+# Real environment values (Supabase URL/anon key) per environment go
+# here via --dart-define-from-file=env/<name>.json — never committed.
+# See env/*.example.json for the required shape. Also covers the old
+# single-file convention in case it's still used locally.
+/env/development.json
+/env/staging.json
+/env/production.json
 /env.json
 
 # Symbolication related

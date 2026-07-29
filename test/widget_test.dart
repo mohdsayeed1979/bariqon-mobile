@@ -1,10 +1,20 @@
 // Smoke tests: splash → app shell → Home content → tab navigation →
-// locale switching, all without touching Supabase (still unconfigured in
-// tests) — Home's mock-data sections don't call a repository either, per
-// the Phase 2B brief.
+// locale switching, all without touching Supabase — the catalog/auth
+// repository providers are overridden below with fixture-backed fakes
+// (see `_testOverrides`), so the suite stays deterministic and offline
+// even though the app itself now runs on the real Supabase-backed
+// repositories.
 
 import 'package:bariqon_app/app/app.dart';
 import 'package:bariqon_app/core/config/app_config.dart';
+import 'package:bariqon_app/features/auth/data/mock_auth_repository.dart';
+import 'package:bariqon_app/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:bariqon_app/features/catalog/data/mock_catalog_data.dart';
+import 'package:bariqon_app/features/catalog/domain/category_repository.dart';
+import 'package:bariqon_app/features/catalog/domain/entities/category.dart';
+import 'package:bariqon_app/features/catalog/domain/entities/product.dart';
+import 'package:bariqon_app/features/catalog/domain/product_repository.dart';
+import 'package:bariqon_app/features/catalog/presentation/controllers/catalog_providers.dart';
 import 'package:bariqon_app/features/catalog/presentation/product_detail_screen.dart';
 import 'package:bariqon_app/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +22,31 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class _FakeCategoryRepository implements CategoryRepository {
+  @override
+  Future<List<Category>> getCategories() async => MockCatalogData.categories;
+}
+
+class _FakeProductRepository implements ProductRepository {
+  @override
+  Future<List<Product>> getProducts() async => MockCatalogData.allProducts;
+}
+
+/// Fresh instances every call — a shared top-level list would let
+/// [MockAuthRepository]'s signed-in state leak between test cases.
+/// `Override` (the precise return element type) isn't exported by
+/// flutter_riverpod's public API, so this can't be spelled explicitly.
+// ignore: strict_top_level_inference
+_testOverrides() => [
+  categoryRepositoryProvider.overrideWithValue(_FakeCategoryRepository()),
+  productRepositoryProvider.overrideWithValue(_FakeProductRepository()),
+  authRepositoryProvider.overrideWithValue(MockAuthRepository()),
+];
+
 Future<void> _pumpPastSplash(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: BariqonApp()));
+  await tester.pumpWidget(
+    ProviderScope(overrides: _testOverrides(), child: const BariqonApp()),
+  );
   await tester.pump();
   // Splash fades in (600ms) then holds (700ms) before navigating — see
   // lib/app/splash_screen.dart.
@@ -250,9 +283,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Woven Fabric Gift Box'), findsWidgets);
-      expect(find.text('Specifications'), findsOneWidget);
-      expect(find.text('Material'), findsOneWidget);
-      expect(find.text('Origin'), findsOneWidget);
+      expect(find.text('Features'), findsOneWidget);
+      expect(find.text('Premium woven fabric'), findsOneWidget);
       // The category chip on Product Detail navigates to that category.
       await tester.tap(find.text('Luxury Gift Boxes').first);
       await tester.pumpAndSettle();
@@ -280,7 +312,7 @@ void main() {
 
       await tester.tap(find.text('Emerald Ribbon Box').first);
       await tester.pumpAndSettle();
-      expect(find.text('Specifications'), findsOneWidget);
+      expect(find.text('Emerald Ribbon Box'), findsWidgets);
     },
   );
 
@@ -294,7 +326,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         // BrandedAppBar watches localeProvider — needs a ProviderScope
-        // ancestor even in this isolated render.
+        // ancestor even in this isolated render. catalogProvider needs the
+        // repository overrides too, same as every other test.
+        overrides: _testOverrides(),
         child: MaterialApp(
           locale: AppConfig.defaultLocale,
           supportedLocales: AppConfig.supportedLocales,
@@ -657,6 +691,8 @@ void main() {
       await tester.tap(signOutButton);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Sign Out'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
 
       expect(

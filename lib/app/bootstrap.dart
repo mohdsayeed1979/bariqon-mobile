@@ -27,6 +27,8 @@ Future<void> bootstrap() async {
         );
       };
 
+      logger.info('Environment: ${EnvConfig.environment.label}');
+
       if (!EnvConfig.isConfigured) {
         // Fails loudly and specifically rather than letting
         // Supabase.initialize throw an opaque error further down, per
@@ -37,7 +39,9 @@ Future<void> bootstrap() async {
           url: EnvConfig.supabaseUrl,
           publishableKey: EnvConfig.supabaseAnonKey,
         );
-        logger.info('Supabase initialized.');
+        logger.info(
+          'Supabase initialized (${EnvConfig.environment.label}).',
+        );
       }
 
       runApp(const ProviderScope(child: BariqonApp()));

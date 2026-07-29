@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/mock_catalog_data.dart';
+import 'controllers/catalog_providers.dart';
+import 'utils/catalog_selectors.dart';
 import 'widgets/categories_section.dart';
 import 'widgets/hero_banner_section.dart';
 import 'widgets/home_footer_section.dart';
@@ -13,20 +16,19 @@ import 'widgets/welcome_section.dart';
 import 'widgets/why_choose_us_section.dart';
 
 /// Home tab root — the permanent Home screen, per
-/// docs/SCREEN_SPECIFICATIONS.md §3, built out in Phase 2B. UI only: every
-/// list below is local mock data (see mock_catalog_data.dart); no
-/// Supabase, no repository, no cart/inquiry logic. Replacing the mock
-/// data source with real repository calls in a later phase shouldn't
-/// require touching this composition — each section already takes data
-/// as a parameter.
-class HomeScreen extends StatefulWidget {
+/// docs/SCREEN_SPECIFICATIONS.md §3, built out in Phase 2B, wired to the
+/// real `cms_products` catalog in the Supabase connection pass. Each
+/// product rail derives from [productsProvider] via `catalog_selectors.dart`
+/// (Featured/New Arrivals/Best Sellers) rather than each section taking
+/// its own mock list.
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
+class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -50,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final productsAsync = ref.watch(productsProvider);
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.navHome),
@@ -68,21 +71,33 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 8),
               const CategoriesSection(),
               const SizedBox(height: 24),
-              ProductSection(
-                title: l10n.homeSectionFeaturedProducts,
-                products: MockCatalogData.featured,
-              ),
-              const SizedBox(height: 24),
-              ProductSection(
-                title: l10n.homeSectionNewArrivals,
-                products: MockCatalogData.newArrivals,
-              ),
-              const SizedBox(height: 24),
-              const PromoBannerSection(),
-              const SizedBox(height: 24),
-              ProductSection(
-                title: l10n.homeSectionBestSellers,
-                products: MockCatalogData.bestSellers,
+              AsyncValueView(
+                value: productsAsync,
+                onRetry: () => ref.invalidate(productsProvider),
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                data: (products) => Column(
+                  children: [
+                    ProductSection(
+                      title: l10n.homeSectionFeaturedProducts,
+                      products: featuredProducts(products),
+                    ),
+                    const SizedBox(height: 24),
+                    ProductSection(
+                      title: l10n.homeSectionNewArrivals,
+                      products: newArrivalProducts(products),
+                    ),
+                    const SizedBox(height: 24),
+                    const PromoBannerSection(),
+                    const SizedBox(height: 24),
+                    ProductSection(
+                      title: l10n.homeSectionBestSellers,
+                      products: bestSellerProducts(products),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               const WhyChooseUsSection(),

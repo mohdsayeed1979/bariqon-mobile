@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
@@ -10,48 +11,39 @@ import '../../../core/widgets/filter_chip_row.dart';
 import '../../../core/widgets/product_results_view.dart';
 import '../../../core/widgets/sort_dropdown.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/mock_catalog_data.dart';
+import 'controllers/catalog_providers.dart';
 import '../domain/entities/category.dart';
+import 'utils/catalog_selectors.dart';
 import 'utils/product_filter_utils.dart';
 
 /// Category Detail screen, per docs/SCREEN_SPECIFICATIONS.md-style scope
 /// and the Phase 2C brief — banner, description, breadcrumb, local
-/// filter/sort/search over this category's mock products, empty and
-/// loading states. Pushed outside the bottom-nav shell, reached from
-/// [CategoryGridCard] taps.
+/// filter/sort/search over this category's products (real `cms_products`
+/// data via [catalogProvider]), empty and loading states. Pushed outside
+/// the bottom-nav shell, reached from [CategoryGridCard] taps.
 ///
-/// Filtering/sorting/search here operate entirely on the local mock list
-/// already in memory — no network call, no repository, no Supabase. That's
-/// still true even though the controls are "live" (not just decorative):
-/// re-ordering a `List<Product>` client-side isn't backend logic, it's
-/// presentation state, same category as a scroll position.
+/// Filtering/sorting/search here operate entirely client-side over the
+/// already-fetched product list — no query per keystroke, matching the
+/// existing `applyProductFilters` pattern.
 ///
 /// Shares [applyProductFilters]/[ProductSortOption]/[ProductResultsView]
 /// with Product Listing (Phase 2D) rather than each screen keeping its own
 /// copy of the same filtering/rendering logic.
-class CategoryDetailScreen extends StatefulWidget {
+class CategoryDetailScreen extends ConsumerStatefulWidget {
   const CategoryDetailScreen({super.key, required this.categoryId});
 
   final String categoryId;
 
   @override
-  State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
+  ConsumerState<CategoryDetailScreen> createState() =>
+      _CategoryDetailScreenState();
 }
 
-class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
-  bool _loading = true;
+class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
   String _searchQuery = '';
   int _filterIndex = 0;
   ProductSortOption _sort = ProductSortOption.featured;
   final _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _loading = false);
-    });
-  }
 
   @override
   void dispose() {
@@ -68,68 +60,86 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     });
   }
 
+  void _retry() {
+    ref.invalidate(categoriesProvider);
+    ref.invalidate(productsProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final category = MockCatalogData.categoryById(widget.categoryId);
+    final catalogAsync = ref.watch(catalogProvider);
 
-    if (category == null) {
-      return Scaffold(
-        appBar: BrandedAppBar(
-          title: l10n.navCategories,
-          showSearchAction: false,
+    return catalogAsync.when(
+      loading: () => _CategoryDetailScaffold(
+        title: l10n.navCategories,
+        body: ListView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          children: [
+            ProductResultsView(
+              loading: true,
+              products: const [],
+              locale: locale,
+              sendInquiryLabel: l10n.homeSendInquiry,
+              sendInquirySnackbarText: l10n.homeSendInquirySnackbar,
+              emptyIcon: Icons.search_off_outlined,
+              emptyMessage: '',
+            ),
+          ],
         ),
-        body: Center(
-          child: ErrorStateView(
-            message: l10n.categoryNotFound,
-            actionLabel: MaterialLocalizations.of(context).backButtonTooltip,
-            onRetry: () =>
-                context.canPop() ? context.pop() : context.go('/categories'),
-          ),
-        ),
-      );
-    }
-
-    final rawProducts = MockCatalogData.productsForCategory(category.id);
-    final visibleProducts = applyProductFilters(
-      source: rawProducts,
-      locale: locale,
-      searchQuery: _searchQuery,
-      priceFilterIndex: _filterIndex,
-      sort: _sort,
-    );
-    final filtersActive =
-        _searchQuery.isNotEmpty || _filterIndex != 0 || _sort != ProductSortOption.featured;
-
-    return Scaffold(
-      appBar: BrandedAppBar(
-        title: category.name(locale),
-        showSearchAction: false,
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _loading
-                  ? ListView(
-                      key: const ValueKey('loading'),
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      children: [
-                        ProductResultsView(
-                          loading: true,
-                          products: const [],
-                          locale: locale,
-                          sendInquiryLabel: l10n.homeSendInquiry,
-                          sendInquirySnackbarText: l10n.homeSendInquirySnackbar,
-                          emptyIcon: Icons.search_off_outlined,
-                          emptyMessage: '',
-                        ),
-                      ],
-                    )
-                  : ListView(
+      error: (error, stackTrace) => _CategoryDetailScaffold(
+        title: l10n.navCategories,
+        body: Center(child: ErrorStateView(onRetry: _retry)),
+      ),
+      data: (catalog) {
+        final (categories, products) = catalog;
+        final category = categoryById(categories, widget.categoryId);
+
+        if (category == null) {
+          return Scaffold(
+            appBar: BrandedAppBar(
+              title: l10n.navCategories,
+              showSearchAction: false,
+            ),
+            body: Center(
+              child: ErrorStateView(
+                message: l10n.categoryNotFound,
+                actionLabel: MaterialLocalizations.of(
+                  context,
+                ).backButtonTooltip,
+                onRetry: () => context.canPop()
+                    ? context.pop()
+                    : context.go('/categories'),
+              ),
+            ),
+          );
+        }
+
+        final rawProducts = productsForCategory(products, category.id);
+        final visibleProducts = applyProductFilters(
+          source: rawProducts,
+          locale: locale,
+          searchQuery: _searchQuery,
+          priceFilterIndex: _filterIndex,
+          sort: _sort,
+        );
+        final filtersActive =
+            _searchQuery.isNotEmpty ||
+            _filterIndex != 0 ||
+            _sort != ProductSortOption.featured;
+
+        return Scaffold(
+          appBar: BrandedAppBar(
+            title: category.name(locale),
+            showSearchAction: false,
+          ),
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: ListView(
                       key: const ValueKey('loaded'),
                       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       children: [
@@ -248,7 +258,30 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                         ),
                       ],
                     ),
+              ),
             ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CategoryDetailScaffold extends StatelessWidget {
+  const _CategoryDetailScaffold({required this.title, required this.body});
+
+  final String title;
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: BrandedAppBar(title: title, showSearchAction: false),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: body,
           ),
         ),
       ),

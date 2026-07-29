@@ -1,35 +1,49 @@
 import 'package:flutter/material.dart';
 
-/// Plain domain entity — no Flutter-beyond-IconData, no Supabase, no JSON
-/// mapping. Field shape (nameEn/nameAr/descriptionEn/descriptionAr)
-/// deliberately mirrors the confirmed `cms_categories` bilingual field
-/// convention from docs/API_CONTRACT.md §1, so swapping the mock data
-/// source for a real repository later doesn't change this type. Populated
-/// from local mock data only — see mock_catalog_data.dart.
+/// Plain domain entity, populated from the real `cms_categories` table
+/// (see [SupabaseCategoryRepository][supabase_category_repository.dart]).
+/// That table has no description or icon column, so both are optional
+/// here: [descriptionEn]/[descriptionAr] are `null` unless a future CMS
+/// change adds them, and [icon] is a presentation-only fallback chosen by
+/// the repository from [key] (see `category_icon_utils.dart`) rather than
+/// backend data.
 @immutable
 class Category {
   const Category({
     required this.id,
+    required this.key,
     required this.nameEn,
     required this.nameAr,
-    required this.descriptionEn,
-    required this.descriptionAr,
     required this.icon,
+    this.descriptionEn,
+    this.descriptionAr,
+    this.displayOrder = 0,
   });
 
   final String id;
+
+  /// Raw `key` column from `cms_categories` — stable even if display
+  /// names change; used to pick [icon].
+  final String key;
+
   final String nameEn;
   final String nameAr;
-  final String descriptionEn;
-  final String descriptionAr;
+  final String? descriptionEn;
+  final String? descriptionAr;
+  final int displayOrder;
 
-  /// Placeholder visual — real category imagery comes from Supabase Storage
-  /// once the backend is connected (Phase 3+); an icon is a deliberate,
-  /// honest placeholder rather than a stand-in photo.
+  /// Placeholder visual — real category imagery/description doesn't exist
+  /// in `cms_categories` today; an icon is an honest placeholder rather
+  /// than a stand-in photo.
   final IconData icon;
 
   String name(Locale locale) => locale.languageCode == 'ar' ? nameAr : nameEn;
 
-  String description(Locale locale) =>
-      locale.languageCode == 'ar' ? descriptionAr : descriptionEn;
+  /// Empty when the backend has no description for this category —
+  /// callers should conditionally render, not fall back to placeholder
+  /// copy.
+  String description(Locale locale) {
+    final value = locale.languageCode == 'ar' ? descriptionAr : descriptionEn;
+    return value ?? '';
+  }
 }

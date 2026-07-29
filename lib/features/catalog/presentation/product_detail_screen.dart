@@ -3,19 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/auto_carousel.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/price_tag.dart';
+import '../../../core/widgets/product_image.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
-import '../data/mock_catalog_data.dart';
-import 'utils/product_filter_utils.dart';
+import 'controllers/catalog_providers.dart';
+import 'utils/catalog_selectors.dart';
 import 'widgets/product_section.dart';
 
 /// Product Detail screen, per the Phase 2D brief — image gallery, title,
-/// description, category, price, mock specifications, Send Inquiry, and
-/// a Related Products rail. Pushed outside the bottom-nav shell, reached
+/// description, category, price, real product features, Send Inquiry, and
+/// a Related Products rail, backed by [catalogProvider] since the
+/// Supabase connection pass. Pushed outside the bottom-nav shell, reached
 /// from any [ProductCard] tap (Home, Category Detail, Product Listing,
 /// Related Products itself).
 ///
@@ -32,53 +35,70 @@ class ProductDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final product = MockCatalogData.productById(productId);
+    final catalogAsync = ref.watch(catalogProvider);
 
-    if (product == null) {
-      return Scaffold(
-        appBar: BrandedAppBar(title: l10n.productsTitle, showSearchAction: false),
-        body: Center(
-          child: ErrorStateView(
-            title: l10n.productNotFoundTitle,
-            message: l10n.productNotFoundMessage,
-            actionLabel: MaterialLocalizations.of(context).backButtonTooltip,
-            onRetry: () =>
-                context.canPop() ? context.pop() : context.go('/home'),
-          ),
-        ),
-      );
-    }
+    return AsyncValueView(
+      value: catalogAsync,
+      onRetry: () {
+        ref.invalidate(categoriesProvider);
+        ref.invalidate(productsProvider);
+      },
+      data: (catalog) {
+        final (categories, products) = catalog;
+        final product = productById(products, productId);
 
-    final category = MockCatalogData.categoryById(product.categoryId);
-    final specs = mockSpecificationValues(product.categoryId, locale);
-    final related = MockCatalogData.relatedProducts(product);
-    final theme = Theme.of(context);
+        if (product == null) {
+          return Scaffold(
+            appBar: BrandedAppBar(
+              title: l10n.productsTitle,
+              showSearchAction: false,
+            ),
+            body: Center(
+              child: ErrorStateView(
+                title: l10n.productNotFoundTitle,
+                message: l10n.productNotFoundMessage,
+                actionLabel: MaterialLocalizations.of(
+                  context,
+                ).backButtonTooltip,
+                onRetry: () =>
+                    context.canPop() ? context.pop() : context.go('/home'),
+              ),
+            ),
+          );
+        }
 
-    return Scaffold(
+        final category = categoryById(categories, product.categoryId);
+        final features = product.features(locale);
+        final related = relatedProducts(products, product);
+        final theme = Theme.of(context);
+        final images = product.allImages;
+
+        return Scaffold(
       appBar: BrandedAppBar(title: product.name(locale), showSearchAction: false),
       body: ListView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
         children: [
-          AutoCarousel(
-            itemCount: 3,
-            height: 280,
-            viewportFraction: 1.0,
-            itemBuilder: (context, index) => Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: index.isEven ? Alignment.topLeft : Alignment.topRight,
-                  end: index.isEven ? Alignment.bottomRight : Alignment.bottomLeft,
-                  colors: [
-                    product.placeholderColor.withValues(alpha: 0.9 - index * 0.1),
-                    product.placeholderColor.withValues(alpha: 0.5),
-                  ],
+          images.isEmpty
+              ? SizedBox(
+                  height: 280,
+                  child: ProductImage(
+                    imageUrl: null,
+                    icon: product.icon,
+                    placeholderColor: product.placeholderColor,
+                    iconSize: 96,
+                  ),
+                )
+              : AutoCarousel(
+                  itemCount: images.length,
+                  height: 280,
+                  viewportFraction: 1.0,
+                  itemBuilder: (context, index) => ProductImage(
+                    imageUrl: images[index],
+                    icon: product.icon,
+                    placeholderColor: product.placeholderColor,
+                    iconSize: 96,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Icon(product.icon, size: 110, color: Colors.white),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
@@ -141,15 +161,15 @@ class ProductDetailScreen extends ConsumerWidget {
                     child: Text(l10n.homeSendInquiry),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  l10n.productDetailSpecificationsHeading,
-                  style: theme.textTheme.titleLarge,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _SpecRow(label: l10n.productSpecMaterial, value: specs.material),
-                _SpecRow(label: l10n.productSpecOrigin, value: specs.origin),
-                _SpecRow(label: l10n.productSpecPackaging, value: specs.packaging),
+                if (features.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  Text(
+                    l10n.productDetailFeaturesHeading,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  for (final feature in features) _FeatureRow(text: feature),
+                ],
               ],
             ),
           ),
@@ -161,42 +181,32 @@ class ProductDetailScreen extends ConsumerWidget {
         ],
       ),
     );
+      },
+    );
   }
 }
 
-class _SpecRow extends StatelessWidget {
-  const _SpecRow({required this.label, required this.value});
+class _FeatureRow extends StatelessWidget {
+  const _FeatureRow({required this.text});
 
-  final String label;
-  final String value;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+          Icon(
+            Icons.check_circle_outline,
+            size: 18,
+            color: theme.colorScheme.primary,
           ),
+          const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text(text, style: theme.textTheme.bodyMedium),
           ),
         ],
       ),

@@ -4,20 +4,20 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/entities/category.dart';
 import '../domain/entities/product.dart';
 
-/// Local, static mock data for the Home and Categories screens — per the
-/// Phase 2B/2C briefs, no backend, no Supabase, no API. Category/product
-/// names are drawn from Bariqon's real, publicly-known business lines
-/// (confirmed in docs/BACKEND_INTEGRATION_REPORT.md) so the UI feels
-/// authentic rather than generic, but every id/description/price here is
-/// placeholder content for layout purposes — none of it is read from or
-/// written to any backend. Swapped for `ProductRepository`/
-/// `CategoryRepository` calls once Supabase is connected.
+/// Static fixture data — no longer used by the app itself (Home/Categories
+/// run on the real `cms_products`/`cms_categories` tables via
+/// `SupabaseCatalogRepository`/`SupabaseProductRepository` since the
+/// Supabase connection pass), but kept as the deterministic, offline-safe
+/// dataset `test/widget_test.dart` serves through fake repositories
+/// (`ProviderScope` overrides), so the widget test suite doesn't depend on
+/// live network access.
 class MockCatalogData {
   const MockCatalogData._();
 
   static const List<Category> categories = [
     Category(
       id: 'luxury-gift-boxes',
+      key: 'luxury-gift-boxes',
       nameEn: 'Luxury Gift Boxes',
       nameAr: 'صناديق الهدايا الفاخرة',
       descriptionEn:
@@ -28,6 +28,7 @@ class MockCatalogData {
     ),
     Category(
       id: 'hospitality',
+      key: 'hospitality',
       nameEn: 'Hospitality Amenities',
       nameAr: 'مستلزمات الضيافة',
       descriptionEn:
@@ -38,6 +39,7 @@ class MockCatalogData {
     ),
     Category(
       id: 'perfumery-cosmetics',
+      key: 'perfumery-cosmetics',
       nameEn: 'Perfumery & Cosmetics',
       nameAr: 'العطور ومستحضرات التجميل',
       descriptionEn:
@@ -48,6 +50,7 @@ class MockCatalogData {
     ),
     Category(
       id: 'toiletries',
+      key: 'toiletries',
       nameEn: 'Toiletries',
       nameAr: 'مستلزمات الحمام',
       descriptionEn: 'Everyday bath and travel essentials with a premium finish.',
@@ -56,6 +59,7 @@ class MockCatalogData {
     ),
     Category(
       id: 'general-trading',
+      key: 'general-trading',
       nameEn: 'General Trading',
       nameAr: 'التجارة العامة',
       descriptionEn:
@@ -77,6 +81,10 @@ class MockCatalogData {
       price: 10.00,
       icon: Icons.card_giftcard,
       placeholderColor: AppColors.primary,
+      featuresEn: ['Premium woven fabric', 'Gift-ready presentation'],
+      featuresAr: ['نسيج فاخر مضفور', 'جاهز للتقديم كهدية'],
+      featured: true,
+      displayOrder: 0,
     ),
     Product(
       id: 'p-featured-2',
@@ -88,6 +96,8 @@ class MockCatalogData {
       price: 24.50,
       icon: Icons.hotel,
       placeholderColor: AppColors.gold,
+      featured: true,
+      displayOrder: 1,
     ),
     Product(
       id: 'p-featured-3',
@@ -99,6 +109,8 @@ class MockCatalogData {
       price: 32.00,
       icon: Icons.local_florist_outlined,
       placeholderColor: AppColors.goldLight,
+      featured: true,
+      displayOrder: 2,
     ),
     Product(
       id: 'p-featured-4',
@@ -110,6 +122,8 @@ class MockCatalogData {
       price: 15.75,
       icon: Icons.soap,
       placeholderColor: AppColors.primary,
+      featured: true,
+      displayOrder: 3,
     ),
   ];
 

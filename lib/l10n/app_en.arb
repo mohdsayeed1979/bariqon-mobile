@@ -356,9 +356,9 @@
     "description": "Label above the price filter chip row."
   },
 
-  "productDetailSpecificationsHeading": "Specifications",
-  "@productDetailSpecificationsHeading": {
-    "description": "Section heading on Product Detail."
+  "productDetailFeaturesHeading": "Features",
+  "@productDetailFeaturesHeading": {
+    "description": "Section heading on Product Detail, above the product's feature list."
   },
 
   "productDetailCategoryLabel": "Category",
@@ -379,21 +379,6 @@
   "productNotFoundMessage": "We couldn't find that product. It may have been removed.",
   "@productNotFoundMessage": {
     "description": "Error state message when Product Detail is opened with an unknown id."
-  },
-
-  "productSpecMaterial": "Material",
-  "@productSpecMaterial": {
-    "description": "Specification row label."
-  },
-
-  "productSpecOrigin": "Origin",
-  "@productSpecOrigin": {
-    "description": "Specification row label."
-  },
-
-  "productSpecPackaging": "Packaging",
-  "@productSpecPackaging": {
-    "description": "Specification row label."
   },
 
   "inquiryCartTitle": "Inquiry Cart",
@@ -592,6 +577,14 @@
   "authCreateAccountCta": "Create Account",
   "@authCreateAccountCta": {
     "description": "Registration screen's submit button."
+  },
+
+  "authRegisterCheckEmailMessage": "Almost there — we sent a confirmation link to {email}. Verify your email, then sign in.",
+  "@authRegisterCheckEmailMessage": {
+    "description": "Shown after Registration when Supabase requires email confirmation before a session exists.",
+    "placeholders": {
+      "email": { "type": "String" }
+    }
   },
 
   "validationPasswordMismatch": "Passwords do not match.",

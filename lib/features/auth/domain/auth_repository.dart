@@ -20,4 +20,18 @@ abstract class AuthRepository {
   Future<void> sendPasswordReset(String email);
 
   Future<AppUser> updateProfile(AppUser updated);
+
+  Future<void> signOut();
+
+  /// The currently signed-in user, if any — used to restore session state
+  /// on app start (e.g. after a cold start with a persisted Supabase
+  /// session).
+  AppUser? get currentUser;
+
+  /// Emits whenever the backend's own notion of the signed-in user changes
+  /// out from under the app — a token refresh, an out-of-band sign-out, a
+  /// session expiring. `null` means signed out. [AuthController] listens
+  /// to this instead of reaching into Supabase directly, so it stays
+  /// backend-agnostic like the rest of this repository's contract.
+  Stream<AppUser?> get authStateChanges;
 }

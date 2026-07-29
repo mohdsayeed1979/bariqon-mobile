@@ -61,6 +61,7 @@ class ProductSection extends ConsumerWidget {
                         price: product.price,
                         icon: product.icon,
                         placeholderColor: product.placeholderColor,
+                        imageUrl: product.imageUrl,
                         sendInquiryLabel: l10n.homeSendInquiry,
                         onTap: () => context.push('/product/${product.id}'),
                         onSendInquiry: () {

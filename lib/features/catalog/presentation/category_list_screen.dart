@@ -1,41 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/category_grid_card.dart';
 import '../../../core/widgets/skeleton_category_grid_card.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/mock_catalog_data.dart';
+import '../domain/entities/category.dart';
+import 'controllers/catalog_providers.dart';
 
 /// Categories tab root — the real Category List screen, per
-/// docs/SCREEN_SPECIFICATIONS.md §4, built out in Phase 2C. UI only: mock
-/// data (see mock_catalog_data.dart), a simulated brief loading phase to
-/// demonstrate the skeleton state, no Supabase/repository calls.
-class CategoryListScreen extends StatefulWidget {
+/// docs/SCREEN_SPECIFICATIONS.md §4, backed by [categoriesProvider]
+/// (real `cms_categories` data) since the Supabase connection pass.
+class CategoryListScreen extends ConsumerWidget {
   const CategoryListScreen({super.key});
 
   @override
-  State<CategoryListScreen> createState() => _CategoryListScreenState();
-}
-
-class _CategoryListScreenState extends State<CategoryListScreen> {
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Simulated load — there's no repository yet to await. Kept short and
-    // purely cosmetic, so the skeleton state (Phase 2C requirement) is
-    // actually visible rather than instant.
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _loading = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.navCategories),
@@ -47,9 +32,16 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             constraints: const BoxConstraints(maxWidth: 900),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
-              child: _loading
-                  ? _CategoryGridSkeleton(key: const ValueKey('loading'))
-                  : _CategoryGrid(key: const ValueKey('loaded')),
+              child: AsyncValueView(
+                value: categoriesAsync,
+                onRetry: () => ref.invalidate(categoriesProvider),
+                loading: () =>
+                    const _CategoryGridSkeleton(key: ValueKey('loading')),
+                data: (categories) => _CategoryGrid(
+                  key: const ValueKey('loaded'),
+                  categories: categories,
+                ),
+              ),
             ),
           ),
         ),
@@ -59,7 +51,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 }
 
 class _CategoryGrid extends StatelessWidget {
-  const _CategoryGrid({super.key});
+  const _CategoryGrid({super.key, required this.categories});
+
+  final List<Category> categories;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +65,7 @@ class _CategoryGrid extends StatelessWidget {
         spacing: AppSpacing.md,
         runSpacing: AppSpacing.md,
         children: [
-          for (final category in MockCatalogData.categories)
+          for (final category in categories)
             CategoryGridCard(
               title: category.name(locale),
               description: category.description(locale),

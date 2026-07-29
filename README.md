@@ -7,19 +7,33 @@ this project is built against.
 
 ## Running locally
 
-The app requires the production Supabase project's URL and anon key,
-supplied at build/run time — never hardcoded, never committed.
+The app takes its Supabase URL/anon key and target environment
+(`development` / `staging` / `production`) from a `--dart-define-from-file`
+JSON, never hardcoded and never committed. One file per environment, all
+three read by Android, iOS, and Web alike:
 
-1. Copy `env.example.json` to `env.json` and fill in the two values.
+1. Copy the relevant `env/<name>.example.json` to `env/<name>.json`
+   (git-ignored) and fill in the real Supabase URL/anon key for that
+   environment.
 2. Run with:
 
    ```
-   flutter run --dart-define-from-file=env.json
+   flutter run --dart-define-from-file=env/development.json
+   flutter run --dart-define-from-file=env/staging.json
+   flutter run --dart-define-from-file=env/production.json
    ```
 
-Without `env.json`, the app still boots (browsing/UI foundation works),
-but logs a clear warning and skips Supabase initialization — see
-`lib/core/config/env_config.dart`.
+   Same flag for `flutter build ios` / `flutter build appbundle` /
+   `flutter build web`.
+
+Today only `env/production.json` points at a real backend (the existing
+Bariqon Supabase project). `development`/`staging` are scaffolded and
+ready to go the moment separate Supabase projects exist for them — no
+code change needed, just filling in that environment's JSON file.
+
+Without a matching `env/<name>.json`, the app still boots (browsing/UI
+foundation works), but logs a clear warning and skips Supabase
+initialization — see `lib/core/config/env_config.dart`.
 
 ## App identifiers
 

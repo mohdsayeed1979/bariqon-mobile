@@ -17,13 +17,17 @@ class CategoryGridCard extends StatefulWidget {
   const CategoryGridCard({
     super.key,
     required this.title,
-    required this.description,
     required this.icon,
+    this.description,
     this.onTap,
   });
 
   final String title;
-  final String description;
+
+  /// Null/empty when the backend has no description for this category —
+  /// the description row is omitted entirely rather than showing
+  /// placeholder copy.
+  final String? description;
   final IconData icon;
   final VoidCallback? onTap;
 
@@ -69,16 +73,18 @@ class _CategoryGridCardState extends State<CategoryGridCard> {
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.3,
+              if (widget.description != null && widget.description!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  widget.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.3,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

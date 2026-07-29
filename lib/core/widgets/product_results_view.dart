@@ -78,6 +78,7 @@ class ProductResultsView extends ConsumerWidget {
             price: product.price,
             icon: product.icon,
             placeholderColor: product.placeholderColor,
+            imageUrl: product.imageUrl,
             sendInquiryLabel: sendInquiryLabel,
             onTap: onProductTap == null ? null : () => onProductTap!(product),
             onSendInquiry: () {

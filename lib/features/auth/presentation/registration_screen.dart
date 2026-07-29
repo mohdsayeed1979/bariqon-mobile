@@ -8,6 +8,7 @@ import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/password_field.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../domain/auth_exceptions.dart';
 import 'controllers/auth_controller.dart';
 
 /// Registration screen, per the Phase 4 brief — validation only, no real
@@ -47,18 +48,25 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     final l10n = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
+    final email = _emailController.text.trim();
     setState(() => _isSubmitting = true);
     try {
       await ref.read(authControllerProvider.notifier).register(
         fullName: _nameController.text.trim(),
         company: _companyController.text.trim(),
-        email: _emailController.text.trim(),
+        email: email,
         mobile: _mobileController.text.trim(),
         country: _countryController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
       context.go('/home');
+    } on EmailConfirmationRequiredException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.authRegisterCheckEmailMessage(email))),
+      );
+      context.canPop() ? context.pop() : context.go('/auth/login');
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
