@@ -63,7 +63,8 @@ class CategoriesSection extends ConsumerWidget {
               ),
             ),
           ),
-          loading: () => Padding(
+          loading: () => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Row(
               children: [

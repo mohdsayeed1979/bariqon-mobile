@@ -435,6 +435,13 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await _pumpPastSplash(tester);
+      // Regression guard for a real bug found on-device: the categories
+      // rail's loading skeleton (briefly visible between navigating past
+      // splash and categoriesProvider resolving) wasn't horizontally
+      // scrollable, so it overflowed at this width before any data even
+      // arrived — catch that transient frame here, not just the settled
+      // "loaded" state the checks below cover.
+      expect(tester.takeException(), isNull);
 
       Future<void> scrollFullyAndCheck() async {
         for (var i = 0; i < 8; i++) {
