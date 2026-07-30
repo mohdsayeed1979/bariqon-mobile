@@ -47,5 +47,13 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Use Face ID to unlock Bariqon when App Lock is enabled.</string>
+		<!-- This app only uses standard HTTPS/TLS (Supabase's REST/Auth/
+		     Realtime APIs) — the App Store's standard export-compliance
+		     exemption, so this skips the "does your app use encryption"
+		     prompt on every App Store Connect submission. -->
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 	</dict>
 </plist>

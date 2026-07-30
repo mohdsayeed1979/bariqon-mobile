@@ -13,36 +13,37 @@ class SkeletonProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 228,
+      width: 168,
       child: Card(
         clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SkeletonBox(width: double.infinity, height: 198, borderRadius: 0),
+            const SkeletonBox(width: double.infinity, height: 120, borderRadius: 0),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
                 AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.md,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SkeletonBox(width: 140, height: 18),
-                  const SizedBox(height: 8),
-                  const SkeletonBox(width: double.infinity, height: 12),
+                  const SkeletonBox(width: 110, height: 14),
                   const SizedBox(height: 6),
-                  const SkeletonBox(width: 120, height: 12),
+                  const SkeletonBox(width: double.infinity, height: 10),
+                  const SizedBox(height: 4),
+                  const SkeletonBox(width: 90, height: 10),
+                  const SizedBox(height: AppSpacing.xs),
+                  const SkeletonBox(width: 50, height: 14),
                   const SizedBox(height: AppSpacing.sm),
-                  const SkeletonBox(width: 60, height: 18),
-                  const SizedBox(height: AppSpacing.md),
                   SkeletonBox(
                     width: double.infinity,
-                    height: 42,
+                    height: 34,
                     borderRadius: AppRadius.md,
                   ),
                 ],

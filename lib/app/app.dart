@@ -10,6 +10,7 @@ import '../core/config/app_config.dart';
 import '../core/theme/app_theme.dart';
 import '../features/settings/presentation/controllers/settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'app_lock_gate.dart';
 import 'router.dart';
 
 /// Current app locale. Hand-written (no codegen — see Phase 1 summary),
@@ -39,6 +40,7 @@ class BariqonApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(isRtl: isRtl),
       themeMode: themeMode,
       locale: locale,
+      builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
       supportedLocales: AppConfig.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,

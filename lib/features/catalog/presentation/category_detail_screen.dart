@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
@@ -10,48 +11,36 @@ import '../../../core/widgets/filter_chip_row.dart';
 import '../../../core/widgets/product_results_view.dart';
 import '../../../core/widgets/sort_dropdown.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/mock_catalog_data.dart';
 import '../domain/entities/category.dart';
+import 'controllers/catalog_providers.dart';
 import 'utils/product_filter_utils.dart';
 
-/// Category Detail screen, per docs/SCREEN_SPECIFICATIONS.md-style scope
-/// and the Phase 2C brief — banner, description, breadcrumb, local
-/// filter/sort/search over this category's mock products, empty and
-/// loading states. Pushed outside the bottom-nav shell, reached from
-/// [CategoryGridCard] taps.
-///
-/// Filtering/sorting/search here operate entirely on the local mock list
-/// already in memory — no network call, no repository, no Supabase. That's
-/// still true even though the controls are "live" (not just decorative):
-/// re-ordering a `List<Product>` client-side isn't backend logic, it's
-/// presentation state, same category as a scroll position.
+/// Category Detail screen, per docs/SCREEN_SPECIFICATIONS.md-style scope.
+/// Category and product data come from [categoriesProvider]/
+/// [productsProvider] (Supabase when configured, mock otherwise — see
+/// catalog_providers.dart); filter/sort/search still operate entirely on
+/// the already-fetched in-memory list, same as before Phase 5 — that part
+/// was always presentation-layer state, not backend logic, so it didn't
+/// need to change.
 ///
 /// Shares [applyProductFilters]/[ProductSortOption]/[ProductResultsView]
-/// with Product Listing (Phase 2D) rather than each screen keeping its own
-/// copy of the same filtering/rendering logic.
-class CategoryDetailScreen extends StatefulWidget {
+/// with Product Listing rather than each screen keeping its own copy of
+/// the same filtering/rendering logic.
+class CategoryDetailScreen extends ConsumerStatefulWidget {
   const CategoryDetailScreen({super.key, required this.categoryId});
 
   final String categoryId;
 
   @override
-  State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
+  ConsumerState<CategoryDetailScreen> createState() =>
+      _CategoryDetailScreenState();
 }
 
-class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
-  bool _loading = true;
+class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
   String _searchQuery = '';
   int _filterIndex = 0;
   ProductSortOption _sort = ProductSortOption.featured;
   final _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _loading = false);
-    });
-  }
 
   @override
   void dispose() {
@@ -72,86 +61,86 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final category = MockCatalogData.categoryById(widget.categoryId);
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final productsAsync = ref.watch(productsProvider);
 
-    if (category == null) {
+    final loading = categoriesAsync.isLoading || productsAsync.isLoading;
+    final error = categoriesAsync.error ?? productsAsync.error;
+
+    if (!loading && error == null) {
+      final categories = categoriesAsync.value!;
+      Category? category;
+      for (final c in categories) {
+        if (c.id == widget.categoryId) {
+          category = c;
+          break;
+        }
+      }
+
+      if (category == null) {
+        return Scaffold(
+          appBar: BrandedAppBar(
+            title: l10n.navCategories,
+            showSearchAction: false,
+          ),
+          body: Center(
+            child: ErrorStateView(
+              message: l10n.categoryNotFound,
+              actionLabel: MaterialLocalizations.of(context).backButtonTooltip,
+              onRetry: () =>
+                  context.canPop() ? context.pop() : context.go('/categories'),
+            ),
+          ),
+        );
+      }
+
+      final rawProducts = productsAsync.value!
+          .where((p) => p.categoryId == category!.id)
+          .toList();
+      final visibleProducts = applyProductFilters(
+        source: rawProducts,
+        locale: locale,
+        searchQuery: _searchQuery,
+        priceFilterIndex: _filterIndex,
+        sort: _sort,
+      );
+      final filtersActive = _searchQuery.isNotEmpty ||
+          _filterIndex != 0 ||
+          _sort != ProductSortOption.featured;
+
       return Scaffold(
         appBar: BrandedAppBar(
-          title: l10n.navCategories,
+          title: category.name(locale),
           showSearchAction: false,
         ),
-        body: Center(
-          child: ErrorStateView(
-            message: l10n.categoryNotFound,
-            actionLabel: MaterialLocalizations.of(context).backButtonTooltip,
-            onRetry: () =>
-                context.canPop() ? context.pop() : context.go('/categories'),
-          ),
-        ),
-      );
-    }
-
-    final rawProducts = MockCatalogData.productsForCategory(category.id);
-    final visibleProducts = applyProductFilters(
-      source: rawProducts,
-      locale: locale,
-      searchQuery: _searchQuery,
-      priceFilterIndex: _filterIndex,
-      sort: _sort,
-    );
-    final filtersActive =
-        _searchQuery.isNotEmpty || _filterIndex != 0 || _sort != ProductSortOption.featured;
-
-    return Scaffold(
-      appBar: BrandedAppBar(
-        title: category.name(locale),
-        showSearchAction: false,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _loading
-                  ? ListView(
-                      key: const ValueKey('loading'),
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      children: [
-                        ProductResultsView(
-                          loading: true,
-                          products: const [],
-                          locale: locale,
-                          sendInquiryLabel: l10n.homeSendInquiry,
-                          sendInquirySnackbarText: l10n.homeSendInquirySnackbar,
-                          emptyIcon: Icons.search_off_outlined,
-                          emptyMessage: '',
-                        ),
-                      ],
-                    )
-                  : ListView(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: ListView(
                       key: const ValueKey('loaded'),
                       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       children: [
                         _Breadcrumb(l10n: l10n, categoryName: category.name(locale)),
                         _CategoryBanner(category: category, locale: locale),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.sm,
+                        if (category.description(locale) != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.sm,
+                            ),
+                            child: Text(
+                              category.description(locale)!,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
                           ),
-                          child: Text(
-                            category.description(locale),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -163,7 +152,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                                 setState(() => _searchQuery = value),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         FilterChipRow(
                           labels: [
                             l10n.categoryFilterAll,
@@ -174,13 +163,13 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                           selectedIndex: _filterIndex,
                           onSelected: (i) => setState(() => _filterIndex = i),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
                           ),
                           child: Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,
@@ -207,7 +196,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.md),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -246,9 +235,41 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                                 : (filtersActive ? _clearFilters : null),
                           ),
                         ),
-                      ],
-                    ),
+                ],
+              ),
             ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: BrandedAppBar(title: l10n.navCategories, showSearchAction: false),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: error != null
+                ? ErrorStateView(
+                    onRetry: () {
+                      ref.invalidate(categoriesProvider);
+                      ref.invalidate(productsProvider);
+                    },
+                  )
+                : ListView(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    children: [
+                      ProductResultsView(
+                        loading: true,
+                        products: const [],
+                        locale: locale,
+                        sendInquiryLabel: l10n.homeSendInquiry,
+                        sendInquirySnackbarText: l10n.homeSendInquirySnackbar,
+                        emptyIcon: Icons.search_off_outlined,
+                        emptyMessage: '',
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -342,7 +363,7 @@ class _CategoryBanner extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: Alignment.bottomLeft,
+                alignment: AlignmentDirectional.bottomStart,
                 child: Text(
                   category.name(locale),
                   maxLines: 2,

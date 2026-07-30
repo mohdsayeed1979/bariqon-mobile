@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/constants/app_sizes.dart';
 import '../core/widgets/brand_logo.dart';
 
 /// Brief branded splash shown after the native launch screen (see
@@ -17,8 +18,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  static const _fadeDuration = Duration(milliseconds: 600);
-  static const _holdDuration = Duration(milliseconds: 700);
+  static const _fadeDuration = AppMotion.splashFade;
+  static const _holdDuration = AppMotion.splashHold;
 
   late final AnimationController _controller = AnimationController(
     vsync: this,

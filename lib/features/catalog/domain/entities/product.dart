@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Plain domain entity for the mock-data Home/Categories screens. Field
-/// shape mirrors what's confirmed (and left open) in
-/// docs/API_CONTRACT.md §2 — bilingual name pair, price, and now
-/// [categoryId] (the unconfirmed real linkage field is flagged there too;
-/// this mirrors the shape without asserting it's correct) — plus a
-/// [placeholderColor]/[icon] pair used in place of real product
-/// photography, which only exists once Supabase Storage is connected
-/// (Phase 3+).
+/// Plain domain entity for the catalog screens. Field shape mirrors the
+/// confirmed `cms_products` columns per docs/BACKEND_MAPPING_REPORT.md §2
+/// — bilingual name/description pair, price, [categoryId] (the confirmed
+/// `category_id` FK), and now [imageUrl] (the confirmed `img` column, a
+/// public Supabase Storage URL). [icon]/[placeholderColor] remain as the
+/// fallback visual for the rare product with no `img` — see
+/// [ProductCard]/[ProductDetailScreen] for how the two are chosen between.
 @immutable
 class Product {
   const Product({
@@ -20,11 +19,12 @@ class Product {
     required this.price,
     required this.icon,
     required this.placeholderColor,
+    this.imageUrl,
   });
 
   final String id;
 
-  /// Matches [Category.id] of the mock category this product belongs to.
+  /// Matches [Category.id] of the category this product belongs to.
   final String categoryId;
 
   final String nameEn;
@@ -32,12 +32,18 @@ class Product {
   final String descriptionEn;
   final String descriptionAr;
 
-  /// BHD. `double` is fine for mock/display purposes here — the real
-  /// column's type is unconfirmed per docs/API_CONTRACT.md §2.
+  /// BHD. Confirmed as a real column (`price`) per
+  /// docs/BACKEND_MAPPING_REPORT.md §2 — PostgREST serializes it as a
+  /// string, parsed to `double` at the repository boundary.
   final double price;
 
   final IconData icon;
   final Color placeholderColor;
+
+  /// Public Supabase Storage URL (`img` column) — null for the mock
+  /// repository and for any real product without a photo, in which case
+  /// [icon]/[placeholderColor] are used instead.
+  final String? imageUrl;
 
   String name(Locale locale) => locale.languageCode == 'ar' ? nameAr : nameEn;
 

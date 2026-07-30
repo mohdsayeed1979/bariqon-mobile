@@ -23,7 +23,11 @@ class CategoryGridCard extends StatefulWidget {
   });
 
   final String title;
-  final String description;
+
+  /// Omitted entirely when null — the real `cms_categories` table has no
+  /// description column (confirmed, per docs/BACKEND_MAPPING_REPORT.md
+  /// §2), so there's nothing honest to show rather than inventing copy.
+  final String? description;
   final IconData icon;
   final VoidCallback? onTap;
 
@@ -69,16 +73,18 @@ class _CategoryGridCardState extends State<CategoryGridCard> {
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.3,
+              if (widget.description != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  widget.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.3,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -92,10 +98,10 @@ class _CategoryGridCardState extends State<CategoryGridCard> {
         onExit: (_) => setState(() => _hovering = false),
         child: AnimatedScale(
           scale: _hovering ? 1.02 : 1.0,
-          duration: const Duration(milliseconds: 150),
+          duration: AppMotion.hoverFast,
           curve: Curves.easeOut,
           child: AnimatedPhysicalModel(
-            duration: const Duration(milliseconds: 150),
+            duration: AppMotion.hoverFast,
             color: theme.colorScheme.surface,
             shadowColor: Colors.black,
             elevation: _hovering ? 6 : 1,

@@ -5,12 +5,20 @@
 
 import 'package:bariqon_app/app/app.dart';
 import 'package:bariqon_app/core/config/app_config.dart';
+import 'package:bariqon_app/core/storage/local_preferences_service.dart';
+import 'package:bariqon_app/core/theme/app_colors.dart';
+import 'package:bariqon_app/features/catalog/data/catalog_cache_service.dart';
+import 'package:bariqon_app/core/widgets/product_card.dart';
+import 'package:bariqon_app/core/widgets/settings_list_tile.dart';
+import 'package:bariqon_app/core/widgets/product_results_view.dart';
+import 'package:bariqon_app/features/catalog/domain/entities/product.dart';
 import 'package:bariqon_app/features/catalog/presentation/product_detail_screen.dart';
 import 'package:bariqon_app/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> _pumpPastSplash(WidgetTester tester) async {
   await tester.pumpWidget(const ProviderScope(child: BariqonApp()));
@@ -961,6 +969,331 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       }
+    },
+  );
+
+  testWidgets(
+    'App Lock: Create PIN dialog validates length and mismatch',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Security'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Enable App Lock'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PIN Lock'));
+      await tester.pumpAndSettle();
+      expect(find.text('Create PIN'), findsOneWidget);
+
+      // Too short — rejected before the "confirm" step even exists.
+      await tester.enterText(find.byType(TextField), '12');
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('PIN must be at least 4 digits.'), findsOneWidget);
+
+      // Long enough — advances to the confirmation step.
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('Confirm PIN'), findsOneWidget);
+
+      // Mismatched confirmation.
+      await tester.enterText(find.byType(TextField), '9999');
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text("PINs don't match."), findsOneWidget);
+
+      // Dismissing here never reaches secure storage (only a matching
+      // confirmation does) — the actual persisted-PIN read/write path is
+      // OS-backed (Keychain/EncryptedSharedPreferences on iOS/Android) and
+      // is verified on-device instead, same as the biometric path below.
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('Authentication Method'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'App Lock: choosing Biometric on a device without it stays disabled, '
+    'no crash',
+    (tester) async {
+      await _pumpPastSplash(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Security'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Enable App Lock'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Biometric Lock'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // The test host has no biometric hardware, so this stays disabled
+      // rather than silently claiming to be on.
+      expect(find.text('Authentication Method'), findsNothing);
+    },
+  );
+
+  testWidgets('Theme selection persists across a simulated restart', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    Future<void> boot() async {
+      // pumpWidget reuses the existing ProviderScope element (and its
+      // ProviderContainer/GoRouter/notifier state) when the new tree's
+      // root widget type matches the old one's — pumping a dummy widget
+      // first forces a real unmount, so this is an actual fresh
+      // `ProviderContainer` each time, not just a rebuild of the same one
+      // that happens to still remember where it navigated to.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: const BariqonApp(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1400));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openThemeRow() async {
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+    }
+
+    await boot();
+    await openThemeRow();
+    expect(find.text('System'), findsOneWidget); // default, nothing saved yet
+
+    await tester.tap(find.text('Theme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Dark'), findsOneWidget);
+
+    // Simulate a cold restart: a brand-new widget tree, backed by the same
+    // (now-populated) SharedPreferences instance — exactly what a real
+    // restart looks like, since the plugin persists to disk.
+    await boot();
+    await openThemeRow();
+    expect(find.text('Dark'), findsOneWidget);
+    expect(find.text('System'), findsNothing);
+  });
+
+  // Same regression guard as every other phase's, applied to the new
+  // Security (App Lock) screen and its Create PIN dialog.
+  testWidgets(
+    'Security screen has zero overflow exceptions at a narrow width, in '
+    'EN and AR',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 740);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Security'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Switch to Arabic on the plain Security screen (no dialog open yet
+      // — a dialog's modal barrier would otherwise block the app bar's
+      // language icon underneath it).
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Enable App Lock, choose PIN, and get partway through Create PIN —
+      // all rendered in Arabic/RTL.
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(SimpleDialogOption).last);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    "ProductResultsView passes each product's imageUrl through to "
+    'ProductCard — regression test for the bug where Product Listing/'
+    'Category Detail always showed the placeholder',
+    (tester) async {
+      const productWithImage = Product(
+        id: 'p1',
+        categoryId: 'c1',
+        nameEn: 'Test Product',
+        nameAr: 'منتج تجريبي',
+        descriptionEn: 'Desc',
+        descriptionAr: 'وصف',
+        price: 10,
+        icon: Icons.card_giftcard,
+        placeholderColor: AppColors.primary,
+        imageUrl: 'https://example.com/real-photo.png',
+      );
+
+      // A single pump (not pumpAndSettle) — this only needs the widget
+      // tree built once to inspect ProductCard's configuration; letting
+      // CachedNetworkImage actually attempt that fake URL over the
+      // network would just make the test slow/flaky for no benefit.
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ProductResultsView(
+                loading: false,
+                products: [productWithImage],
+                locale: Locale('en'),
+                sendInquiryLabel: 'Send Inquiry',
+                sendInquirySnackbarText: 'Added',
+                emptyIcon: Icons.search_off,
+                emptyMessage: 'Empty',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final card = tester.widget<ProductCard>(find.byType(ProductCard));
+      expect(card.imageUrl, 'https://example.com/real-photo.png');
+    },
+  );
+
+  testWidgets(
+    'App Lock: a resume with no corresponding prior pause does not '
+    'spuriously re-lock (guards the infinite-relock loop fix)',
+    (tester) async {
+      // The full biometric-prompt-induced lifecycle race that caused the
+      // original loop needs a real OS prompt to reproduce and is verified
+      // on-device instead (see the completion report) — this covers the
+      // `pausedAt == null` guard specifically: any resume event that
+      // doesn't correspond to a real, tracked backgrounding must be a
+      // no-op, which is what stops that kind of spurious event from ever
+      // compounding into a loop.
+      SharedPreferences.setMockInitialValues({
+        'app_lock_enabled': true,
+        'app_lock_method': 'pin',
+        'app_lock_timeout': 0,
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: const BariqonApp(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1400));
+      await tester.pumpAndSettle();
+
+      // Locked on cold start, since App Lock is enabled.
+      expect(find.text('Bariqon is Locked'), findsOneWidget);
+
+      tester.binding.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      // Still just the one lock screen — not rebuilt/duplicated/looping.
+      expect(find.text('Bariqon is Locked'), findsOneWidget);
+    },
+  );
+
+  test(
+    'CatalogCacheService round-trips rows through SharedPreferences '
+    '(the offline-fallback snapshot used by the Supabase catalog repos)',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final cache = CatalogCacheService(prefs);
+
+      expect(cache.getCategories(), isNull);
+      expect(cache.getProducts(), isNull);
+
+      final categoryRows = [
+        {'id': 1, 'name_en': 'Luxury Gift Boxes', 'name_ar': 'علب الهدايا'},
+      ];
+      final productRows = [
+        {
+          'id': 42,
+          'category_id': 1,
+          'name_en': 'Gift Box',
+          'name_ar': 'صندوق هدايا',
+          'desc_en': 'A box',
+          'desc_ar': 'صندوق',
+          'price': '7.500',
+          'img': 'https://example.com/img.png',
+        },
+      ];
+
+      await cache.setCategories(categoryRows);
+      await cache.setProducts(productRows);
+      await cache.setFeaturedProducts(productRows);
+      await cache.setNewArrivals(productRows);
+      await cache.setBestSellers(productRows);
+
+      expect(cache.getCategories(), categoryRows);
+      expect(cache.getProducts(), productRows);
+      expect(cache.getFeaturedProducts(), productRows);
+      expect(cache.getNewArrivals(), productRows);
+      expect(cache.getBestSellers(), productRows);
+    },
+  );
+
+  testWidgets(
+    'SettingsListTile disclosure chevron mirrors for RTL '
+    '(regression test for the Settings/RTL polish pass — Row already '
+    'reorders children for RTL, but the chevron glyph itself did not)',
+    (tester) async {
+      // Directionality goes *inside* `home`, not wrapped around MaterialApp
+      // — MaterialApp establishes its own Directionality from its locale,
+      // which would otherwise shadow an outer one entirely.
+      Future<void> pump(TextDirection direction) => tester.pumpWidget(
+        MaterialApp(
+          home: Directionality(
+            textDirection: direction,
+            child: Scaffold(
+              body: SettingsListTile(
+                icon: Icons.info_outline,
+                label: 'Test',
+                onTap: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await pump(TextDirection.ltr);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_left), findsNothing);
+
+      await pump(TextDirection.rtl);
+      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsNothing);
     },
   );
 }

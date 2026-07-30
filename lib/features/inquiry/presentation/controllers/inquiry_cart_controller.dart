@@ -1,16 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/env_config.dart';
+import '../../../../core/network/supabase_service.dart';
 import '../../../catalog/domain/entities/product.dart';
 import '../../data/in_memory_inquiry_cart_repository.dart';
+import '../../data/mock_inquiry_submission_repository.dart';
+import '../../data/supabase_inquiry_submission_repository.dart';
 import '../../domain/entities/inquiry_item.dart';
 import '../../domain/inquiry_cart_repository.dart';
+import '../../domain/inquiry_submission_repository.dart';
 
-/// The single place the cart's backing repository is chosen — swap
-/// [InMemoryInquiryCartRepository] for a Supabase-backed implementation
-/// here, later, and nothing else in this file or in the UI needs to
-/// change (see docs on [InquiryCartRepository]).
+/// The cart itself stays local/in-memory regardless of environment — it's
+/// presentation-layer scratch state, never persisted or sent anywhere
+/// until [InquirySubmissionRepository.submit] is called.
 final inquiryCartRepositoryProvider = Provider<InquiryCartRepository>((ref) {
   return InMemoryInquiryCartRepository();
+});
+
+/// Same env-conditional selection as auth/catalog — unconfigured (every
+/// `flutter test` run, or a dev run without `--dart-define` credentials)
+/// falls back to the mock; a configured build writes real inquiries to
+/// Supabase.
+final inquirySubmissionRepositoryProvider = Provider<InquirySubmissionRepository>((ref) {
+  if (!EnvConfig.isConfigured) return MockInquirySubmissionRepository();
+  return SupabaseInquirySubmissionRepository(ref.watch(supabaseClientProvider));
 });
 
 /// Riverpod state for the Inquiry Cart, per the Phase 3 brief ("use

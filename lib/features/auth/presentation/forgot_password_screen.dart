@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
 
-/// Forgot Password screen, per the Phase 4 brief — email input, then a
-/// success confirmation in place (no real email is sent; [MockAuthRepository]
-/// just simulates the delay).
+/// Forgot Password screen — real `auth.resetPasswordForEmail` as of Phase
+/// 7. Supabase deliberately doesn't reveal whether the email exists (avoids
+/// account enumeration), so the success view shows regardless — the only
+/// realistic failure here is network/rate-limit, not "no such account".
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -31,18 +33,32 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  String _messageFor(Object error, AppLocalizations l10n) {
+    if (error is AuthFailure) return error.message;
+    return l10n.genericErrorMessage;
+  }
+
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSubmitting = true);
-    await ref
-        .read(authControllerProvider.notifier)
-        .sendPasswordReset(_emailController.text.trim());
-    if (!mounted) return;
-    setState(() {
-      _isSubmitting = false;
-      _submitted = true;
-    });
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .sendPasswordReset(_emailController.text.trim());
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _submitted = true;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
+    }
   }
 
   @override
@@ -67,7 +83,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       children: [
                         Icon(
                           Icons.mark_email_read_outlined,
-                          size: 56,
+                          size: AppIconSize.feature,
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -100,7 +116,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         children: [
                           Icon(
                             Icons.lock_reset_outlined,
-                            size: 56,
+                            size: AppIconSize.feature,
                             color: theme.colorScheme.primary,
                           ),
                           const SizedBox(height: AppSpacing.lg),

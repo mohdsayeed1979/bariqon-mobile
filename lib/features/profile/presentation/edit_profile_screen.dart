@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
@@ -11,9 +12,12 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/app_user.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 
-/// Edit Profile screen, per the Phase 4 brief — pre-filled from the
-/// current [AppUser], saved back through [AuthController.updateProfile]
-/// (mock only, no backend write).
+/// Edit Profile screen — pre-filled from the current [AppUser], saved back
+/// through [AuthController.updateProfile]. As of Phase 7 this is a real
+/// write: Full Name and Email go to Supabase (Auth + the `profiles`
+/// table); Company/Mobile/Country have no column in the real `profiles`
+/// schema (confirmed: id/email/full_name/timestamps only) so they're kept
+/// device-local — see [AuthController.updateProfile]'s doc comment.
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key, required this.user});
 
@@ -53,11 +57,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
+  String _messageFor(Object error, AppLocalizations l10n) {
+    if (error is AuthFailure) return error.message;
+    return l10n.genericErrorMessage;
+  }
+
   Future<void> _submit() async {
     final user = widget.user;
     if (user == null) return;
     final l10n = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final newEmail = _emailController.text.trim();
+    final emailChanged = newEmail != user.email;
 
     setState(() => _isSubmitting = true);
     try {
@@ -67,18 +79,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             user.copyWith(
               fullName: _nameController.text.trim(),
               company: _companyController.text.trim(),
-              email: _emailController.text.trim(),
+              email: newEmail,
               mobile: _mobileController.text.trim(),
               country: _countryController.text.trim(),
             ),
           );
       if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            emailChanged
+                ? l10n.profileEmailChangeConfirmationNotice(newEmail)
+                : l10n.profileUpdateSuccessMessage,
+          ),
+        ),
+      );
       context.pop();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -123,6 +144,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     Validators.required(v, message: l10n.validationRequired),
               ),
               const SizedBox(height: AppSpacing.md),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      l10n.profileLocalOnlyFieldsNotice,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
               AppTextField(
                 label: l10n.inquiryFormCompany,
                 controller: _companyController,

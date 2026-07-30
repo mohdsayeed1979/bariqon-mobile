@@ -66,7 +66,7 @@ class _SignedOutPrompt extends StatelessWidget {
           children: [
             Icon(
               Icons.account_circle_outlined,
-              size: 64,
+              size: AppIconSize.avatar,
               color: theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -123,7 +123,7 @@ class _SignedInProfile extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      ref.read(authControllerProvider.notifier).signOut();
+      await ref.read(authControllerProvider.notifier).signOut();
     }
   }
 

@@ -18,6 +18,8 @@ import '../features/inquiry/presentation/inquiry_details_form_screen.dart';
 import '../features/profile/presentation/edit_profile_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/settings/presentation/about_screen.dart';
+import '../features/settings/presentation/admin_panel_screen.dart';
+import '../features/settings/presentation/app_lock_settings_screen.dart';
 import '../features/settings/presentation/contact_screen.dart';
 import '../features/settings/presentation/legal_content_screen.dart';
 import '../features/settings/presentation/notification_preferences_screen.dart';
@@ -126,6 +128,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/contact',
         builder: (context, state) => const ContactScreen(),
+      ),
+      GoRoute(
+        path: '/settings/security',
+        builder: (context, state) => const AppLockSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/admin',
+        builder: (context, state) => const AdminPanelScreen(),
       ),
       GoRoute(
         path: '/settings/notifications',

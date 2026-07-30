@@ -50,7 +50,7 @@ class InquiryConfirmationScreen extends StatelessWidget {
                         ),
                         child: const Icon(
                           Icons.check_circle,
-                          size: 64,
+                          size: AppIconSize.avatar,
                           color: AppColors.primary,
                         ),
                       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../constants/app_sizes.dart';
 
 /// Scoped error surface with a retry action, per docs/DESIGN_SYSTEM.md §8
 /// and docs/IMPLEMENTATION_ROADMAP.md §12 — used inline within a screen
@@ -34,7 +35,7 @@ class ErrorStateView extends StatelessWidget {
         children: [
           Icon(
             Icons.error_outline,
-            size: 40,
+            size: AppIconSize.stateIcon,
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 12),

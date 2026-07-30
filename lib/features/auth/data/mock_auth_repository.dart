@@ -1,5 +1,6 @@
 import '../domain/auth_repository.dart';
 import '../domain/entities/app_user.dart';
+import '../domain/entities/register_result.dart';
 
 /// Local-only mock: no network, no validation of credentials against any
 /// real account (any email/password combination "succeeds"), just a
@@ -19,7 +20,13 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AppUser> register({
+  Future<void> logout() async {}
+
+  @override
+  Future<AppUser?> restoreSession() async => null;
+
+  @override
+  Future<RegisterResult> register({
     required String fullName,
     required String company,
     required String email,
@@ -28,13 +35,16 @@ class MockAuthRepository implements AuthRepository {
     required String password,
   }) async {
     await Future.delayed(_simulatedDelay);
-    return AppUser(
-      id: 'mock-user-${email.hashCode}',
-      fullName: fullName,
-      email: email,
-      company: company,
-      mobile: mobile,
-      country: country,
+    return RegisterResult(
+      user: AppUser(
+        id: 'mock-user-${email.hashCode}',
+        fullName: fullName,
+        email: email,
+        company: company,
+        mobile: mobile,
+        country: country,
+      ),
+      requiresEmailConfirmation: false,
     );
   }
 

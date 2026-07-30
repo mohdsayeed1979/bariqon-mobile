@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/config/env_config.dart';
 import '../core/logging/app_logger.dart';
+import '../core/storage/local_preferences_service.dart';
 import 'app.dart';
 
 /// App entry sequence, per docs/ARCHITECTURE.md §9 and
@@ -40,7 +42,20 @@ Future<void> bootstrap() async {
         logger.info('Supabase initialized.');
       }
 
-      runApp(const ProviderScope(child: BariqonApp()));
+      // Loaded once, up front — SharedPreferences caches everything in
+      // memory after this, so every read through LocalPreferencesService
+      // afterward is synchronous (no FutureProvider/AsyncValue needed for
+      // theme/App Lock/remember-me state).
+      final sharedPreferences = await SharedPreferences.getInstance();
+
+      runApp(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          ],
+          child: const BariqonApp(),
+        ),
+      );
     },
     (error, stackTrace) {
       AppLogger.instance.error(

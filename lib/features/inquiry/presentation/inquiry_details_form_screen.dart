@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
@@ -13,14 +14,13 @@ import 'controllers/inquiry_cart_controller.dart';
 import '../domain/entities/inquiry.dart';
 import '../domain/entities/inquiry_contact_details.dart';
 
-/// Inquiry Details Form, per the Phase 3 brief — Name/Company/Email/
-/// Mobile/Country/Notes, **validation only, no submission**: there's no
-/// backend to send to yet. "Submit" here means completing the local mock
-/// flow — build an [Inquiry] snapshot with a client-generated reference
-/// number, clear the cart, and hand off to the Confirmation screen. When
-/// real submission exists, only this method's body changes (an actual
-/// repository call replaces the local snapshot); the form/validation code
-/// around it doesn't.
+/// Inquiry Details Form — Name/Company/Email/Mobile/Country/Notes, then a
+/// real submission as of Phase 7: builds an [Inquiry] snapshot (with a
+/// client-generated reference number for display/tracking, since the
+/// backend table has no reference column — see
+/// [SupabaseInquirySubmissionRepository]), sends it via
+/// [inquirySubmissionRepositoryProvider], clears the cart only on success,
+/// and hands off to the Confirmation screen.
 class InquiryDetailsFormScreen extends ConsumerStatefulWidget {
   const InquiryDetailsFormScreen({super.key});
 
@@ -38,6 +38,7 @@ class _InquiryDetailsFormScreenState
   final _mobileController = TextEditingController();
   final _countryController = TextEditingController();
   final _notesController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -61,7 +62,13 @@ class _InquiryDetailsFormScreenState
     return 'INQ-$datePart-$suffix';
   }
 
-  void _submit() {
+  String _messageFor(Object error, AppLocalizations l10n) {
+    if (error is Failure) return error.message;
+    return l10n.genericErrorMessage;
+  }
+
+  Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     final items = ref.read(inquiryCartProvider);
@@ -79,8 +86,20 @@ class _InquiryDetailsFormScreenState
       submittedAt: DateTime.now(),
     );
 
-    ref.read(inquiryCartProvider.notifier).clear();
-    context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(inquirySubmissionRepositoryProvider).submit(inquiry);
+      if (!mounted) return;
+      ref.read(inquiryCartProvider.notifier).clear();
+      context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -167,8 +186,14 @@ class _InquiryDetailsFormScreenState
                           width: double.infinity,
                           height: 48,
                           child: FilledButton(
-                            onPressed: _submit,
-                            child: Text(l10n.inquiryFormSubmit),
+                            onPressed: _isSubmitting ? null : _submit,
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : Text(l10n.inquiryFormSubmit),
                           ),
                         ),
                       ],

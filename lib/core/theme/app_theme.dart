@@ -19,6 +19,16 @@ class AppTheme {
       tertiary: AppColors.goldLight,
       error: AppColors.error,
       surface: AppColors.surfaceLight,
+      // True-neutral overrides — see the doc comment on these constants
+      // in app_colors.dart for why this exists (the Phase 6 "feels
+      // darker than desired" fix).
+      surfaceContainerLowest: AppColors.surfaceContainerLowestLight,
+      surfaceContainerLow: AppColors.surfaceContainerLowLight,
+      surfaceContainer: AppColors.surfaceContainerLight,
+      surfaceContainerHigh: AppColors.surfaceContainerHighLight,
+      surfaceContainerHighest: AppColors.surfaceContainerHighestLight,
+      outline: AppColors.outlineLight,
+      outlineVariant: AppColors.outlineVariantLight,
     );
 
     return _base(colorScheme: colorScheme, isRtl: isRtl);
@@ -33,6 +43,13 @@ class AppTheme {
       tertiary: AppColors.goldLight,
       error: AppColors.error,
       surface: AppColors.surfaceDark,
+      surfaceContainerLowest: AppColors.surfaceContainerLowestDark,
+      surfaceContainerLow: AppColors.surfaceContainerLowDark,
+      surfaceContainer: AppColors.surfaceContainerDark,
+      surfaceContainerHigh: AppColors.surfaceContainerHighDark,
+      surfaceContainerHighest: AppColors.surfaceContainerHighestDark,
+      outline: AppColors.outlineDark,
+      outlineVariant: AppColors.outlineVariantDark,
     );
 
     return _base(colorScheme: colorScheme, isRtl: isRtl);
@@ -56,6 +73,12 @@ class AppTheme {
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
+        // Material 3 tints an AppBar's background toward `surfaceTint`
+        // (== primary, the deep forest green) once content scrolls
+        // beneath it — surfaceTintColor: transparent keeps it a clean
+        // flat surface instead, part of the same "feels darker than
+        // desired" fix as the Card/Dialog overrides below.
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: textTheme.titleLarge,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -92,8 +115,32 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
+        elevation: 1,
+        // Same fix as appBarTheme above — a flat, true-neutral card
+        // instead of one auto-tinted green by elevation, with a soft
+        // plain shadow standing in for that tint instead.
+        surfaceTintColor: Colors.transparent,
+        shadowColor: colorScheme.shadow.withValues(alpha: 0.12),
+        color: colorScheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        surfaceTintColor: Colors.transparent,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        surfaceTintColor: Colors.transparent,
+      ),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
       // Material 3 navigation components — used by AppShell (bottom nav on

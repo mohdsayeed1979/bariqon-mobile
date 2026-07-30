@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../constants/app_sizes.dart';
+
 /// Auto-sliding carousel with a smooth page indicator, per
 /// docs/IMPLEMENTATION_ROADMAP.md §2 (`ImageCarousel`) — used for the Home
 /// hero banner today; generic enough to reuse for a product image gallery
@@ -47,7 +49,7 @@ class _AutoCarouselState extends State<AutoCarousel> {
     final next = (_controller.page ?? 0).round() + 1;
     _controller.animateToPage(
       next % widget.itemCount,
-      duration: const Duration(milliseconds: 500),
+      duration: AppMotion.carouselSlide,
       curve: Curves.easeInOut,
     );
   }
@@ -84,7 +86,8 @@ class _AutoCarouselState extends State<AutoCarousel> {
                 final distance = (page - i).abs().clamp(0.0, 1.0);
                 final isActive = distance < 0.5;
                 return AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppMotion.carouselIndicator,
+                  curve: AppMotion.standardCurve,
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   width: isActive ? 20 : 6,
                   height: 6,

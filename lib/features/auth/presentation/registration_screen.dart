@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/password_field.dart';
@@ -10,9 +11,11 @@ import '../../../core/utils/validators.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
 
-/// Registration screen, per the Phase 4 brief — validation only, no real
-/// account creation. On success the mock session is set to Signed In
-/// (same "mock completion, no backend" shape as Phase 3's Inquiry form).
+/// Registration screen — real Supabase `auth.signUp` as of Phase 7. If the
+/// project requires email confirmation, [_pendingConfirmation] swaps the
+/// form for a "check your email" success view instead of navigating to
+/// Home, since there's no session to navigate into yet (see
+/// [AuthController.register]/`RegisterResult`).
 class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
 
@@ -30,6 +33,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isSubmitting = false;
+  bool _pendingConfirmation = false;
 
   @override
   void dispose() {
@@ -43,13 +47,21 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     super.dispose();
   }
 
+  String _messageFor(Object error, AppLocalizations l10n) {
+    // AuthFailure carries Supabase's own user-facing message (e.g. "User
+    // already registered", "Password should be at least 6 characters") —
+    // worth showing directly rather than flattening to a generic one.
+    if (error is AuthFailure) return error.message;
+    return l10n.genericErrorMessage;
+  }
+
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(authControllerProvider.notifier).register(
+      final signedIn = await ref.read(authControllerProvider.notifier).register(
         fullName: _nameController.text.trim(),
         company: _companyController.text.trim(),
         email: _emailController.text.trim(),
@@ -58,12 +70,16 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         password: _passwordController.text,
       );
       if (!mounted) return;
-      context.go('/home');
-    } catch (_) {
+      if (signedIn) {
+        context.go('/home');
+      } else {
+        setState(() => _pendingConfirmation = true);
+      }
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.genericErrorMessage)));
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -72,6 +88,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.registerTitle, showSearchAction: false),
@@ -81,7 +98,38 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
-              child: Form(
+              child: _pendingConfirmation
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.mark_email_read_outlined,
+                          size: AppIconSize.feature,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          l10n.registerPendingConfirmationHeading,
+                          style: theme.textTheme.headlineSmall,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          l10n.registerPendingConfirmationMessage(
+                            _emailController.text.trim(),
+                          ),
+                          style: theme.textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        FilledButton(
+                          onPressed: () =>
+                              context.canPop() ? context.pop() : context.go('/auth/login'),
+                          child: Text(l10n.forgotPasswordBackToSignIn),
+                        ),
+                      ],
+                    )
+                  : Form(
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

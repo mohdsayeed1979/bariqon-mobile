@@ -6,12 +6,18 @@ import '../../../app/app.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/settings_list_tile.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../auth/domain/entities/auth_session.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 
 /// Settings screen, per the Phase 4 brief — Language (real, reuses the
 /// existing [localeProvider]), Theme (real, local-only preference — see
 /// [themeModeProvider]), Notifications/About/Contact/Privacy/Terms (UI
 /// only, per the brief). Reachable from Profile in every auth state.
+///
+/// The "Admin Panel" row only appears for a signed-in user whose
+/// [AppUser.isAdmin] is true (see SupabaseAuthRepository for how that's
+/// derived) — normal users never see it.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -46,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (selected != null) {
-      ref.read(themeModeProvider.notifier).state = selected;
+      ref.read(themeModeProvider.notifier).setThemeMode(selected);
     }
   }
 
@@ -64,11 +70,21 @@ class SettingsScreen extends ConsumerWidget {
     final languageLabel = locale.languageCode == 'en'
         ? l10n.settingsLanguageEnglish
         : l10n.settingsLanguageArabic;
+    final session = ref.watch(authControllerProvider);
+    final isAdmin = session is SignedInSession && session.user.isAdmin;
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.settingsTitle, showSearchAction: false),
       body: ListView(
         children: [
+          if (isAdmin) ...[
+            SettingsListTile(
+              icon: Icons.admin_panel_settings_outlined,
+              label: l10n.adminPanelTitle,
+              onTap: () => context.push('/settings/admin'),
+            ),
+            const Divider(height: 1),
+          ],
           SettingsListTile(
             icon: Icons.translate_outlined,
             label: l10n.settingsLanguageTitle,
@@ -85,6 +101,12 @@ class SettingsScreen extends ConsumerWidget {
             label: l10n.settingsThemeTitle,
             trailingText: _themeLabel(l10n, themeMode),
             onTap: () => _pickTheme(context, ref),
+          ),
+          const Divider(height: 1),
+          SettingsListTile(
+            icon: Icons.lock_outline,
+            label: l10n.securityTitle,
+            onTap: () => context.push('/settings/security'),
           ),
           const Divider(height: 1),
           SettingsListTile(

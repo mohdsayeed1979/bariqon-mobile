@@ -18,12 +18,14 @@ TextTheme buildAppTextTheme({required Color color, required bool isRtl}) {
     letterSpacing: 0.4, // mirrors the site's heading letter-spacing
   );
 
-  TextStyle body(double size, FontWeight weight) => TextStyle(
-    fontFamily: bodyFont,
-    fontSize: size,
-    fontWeight: weight,
-    color: color,
-  );
+  TextStyle body(double size, FontWeight weight, {double? height}) =>
+      TextStyle(
+        fontFamily: bodyFont,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        height: height,
+      );
 
   return TextTheme(
     displayLarge: heading(57, FontWeight.w700),
@@ -35,9 +37,13 @@ TextTheme buildAppTextTheme({required Color color, required bool isRtl}) {
     titleLarge: heading(22, FontWeight.w600),
     titleMedium: body(16, FontWeight.w600),
     titleSmall: body(14, FontWeight.w600),
-    bodyLarge: body(16, FontWeight.w400),
-    bodyMedium: body(14, FontWeight.w400),
-    bodySmall: body(12, FontWeight.w400),
+    // Reading copy (descriptions, messages, form hints) gets a slightly
+    // taller line height for a calmer, more premium reading feel — UI
+    // chrome (titles/labels above/below) stays at the tighter default so
+    // this doesn't inflate button/tile heights across the app.
+    bodyLarge: body(16, FontWeight.w400, height: 1.5),
+    bodyMedium: body(14, FontWeight.w400, height: 1.5),
+    bodySmall: body(12, FontWeight.w400, height: 1.4),
     labelLarge: body(14, FontWeight.w600),
     labelMedium: body(12, FontWeight.w600),
     labelSmall: body(11, FontWeight.w600),

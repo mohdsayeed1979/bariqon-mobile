@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_sizes.dart';
+
 /// Shimmering placeholder box, per docs/DESIGN_SYSTEM.md §6/§8 — the base
 /// primitive behind screen-specific skeletons (e.g. a future
 /// `SkeletonProductCard` composes several of these). Deliberately dependency
@@ -25,7 +27,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1200),
+    duration: AppMotion.shimmer,
   )..repeat(reverse: true);
 
   @override

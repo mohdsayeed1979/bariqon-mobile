@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../constants/app_sizes.dart';
 
 /// Icon + message (+ optional action) empty-state surface, per
 /// docs/DESIGN_SYSTEM.md §8 and docs/IMPLEMENTATION_ROADMAP.md §13.
@@ -31,7 +32,7 @@ class EmptyStateView extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 40,
+            size: AppIconSize.stateIcon,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 12),

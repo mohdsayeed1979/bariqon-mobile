@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// See lib/app/app.dart's localeProvider comment — same rationale for using
-// the pre-codegen `StateProvider` here.
-import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../../core/storage/local_preferences_service.dart';
 import '../../domain/notification_preferences.dart';
 
-/// App-wide theme preference — local only (no persistence yet), per the
-/// Phase 4 brief's "Theme" settings row. Wired into [BariqonApp]'s
-/// `themeMode` so, unlike the other Phase 4 UI-only rows, this one is
-/// immediately real: the same "local state now, no backend" bar every
-/// other mock feature in this app already clears.
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+/// App-wide theme preference, per the Phase 4 brief's "Theme" settings
+/// row — persisted via [LocalPreferencesService] (a bug fix: it used to
+/// reset to System on every restart) and restored synchronously on
+/// startup, since `SharedPreferences` is already fully loaded into memory
+/// by the time this `build()` runs (see bootstrap.dart). Defaults to
+/// System only when nothing has ever been explicitly saved — never resets
+/// to it after an explicit choice.
+class ThemeModeController extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
+    return ref.watch(localPreferencesServiceProvider).getThemeMode() ??
+        ThemeMode.system;
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    state = mode;
+    ref.read(localPreferencesServiceProvider).setThemeMode(mode);
+  }
+}
+
+final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(
+  ThemeModeController.new,
+);
 
 class NotificationPreferencesController extends Notifier<NotificationPreferences> {
   @override

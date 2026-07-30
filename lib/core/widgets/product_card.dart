@@ -1,14 +1,22 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_sizes.dart';
 import 'price_tag.dart';
+import 'product_image_placeholder.dart';
 
 /// Product tile for horizontally-scrolling product rails, per
 /// docs/DESIGN_SYSTEM.md §8 and docs/SCREEN_SPECIFICATIONS.md §3/§18.
-/// [icon]/[placeholderColor] stand in for a product photo — real product
-/// imagery is always remote (Supabase Storage) per
-/// docs/SUPABASE_INTEGRATION.md §5, and doesn't exist until that's
-/// connected in a later phase.
+///
+/// Shows the real photo at [imageUrl] (a Supabase Storage URL, per
+/// docs/BACKEND_MAPPING_REPORT.md §2) when present, via
+/// [CachedNetworkImage] — falling back to [ProductImagePlaceholder] while
+/// it loads, on error, or when there's no image at all (the mock
+/// repository, or a real product missing a photo). [icon]/
+/// [placeholderColor] are kept for API compatibility but no longer drive
+/// the image slot — a generic icon+color tile risked reading as a broken
+/// image rather than deliberate branding, so it was replaced with the
+/// premium [ProductImagePlaceholder].
 ///
 /// Sizes itself to its own content (`mainAxisSize.min` throughout,
 /// `maxLines`/fixed heights on every text row) rather than depending on a
@@ -28,6 +36,7 @@ class ProductCard extends StatelessWidget {
     required this.icon,
     required this.placeholderColor,
     required this.sendInquiryLabel,
+    this.imageUrl,
     this.onSendInquiry,
     this.onTap,
   });
@@ -37,48 +46,56 @@ class ProductCard extends StatelessWidget {
   final double price;
   final IconData icon;
   final Color placeholderColor;
+  final String? imageUrl;
   final String sendInquiryLabel;
   final VoidCallback? onSendInquiry;
   final VoidCallback? onTap;
+
+  /// Card width and image aspect ratio — deliberately smaller/wider than
+  /// the first pass per the "cards feel oversized, image area too large"
+  /// polish request: a narrower card fits more per row, and a wider
+  /// (shorter) image area leaves more of the card's height for content
+  /// instead of empty photo space.
+  static const double _width = 168;
+  static const double _imageAspectRatio = 1.4;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SizedBox(
-      width: 228,
+      width: _width,
       child: Card(
         clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
         child: InkWell(
           onTap: onTap,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Larger placeholder image area than the first pass, per
-              // the polish request — still an honest gradient+icon
-              // placeholder, not a stand-in photo (see class doc).
               AspectRatio(
-                aspectRatio: 1.15,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        placeholderColor.withValues(alpha: 0.85),
-                        placeholderColor.withValues(alpha: 0.55),
-                      ],
-                    ),
-                  ),
-                  child: Icon(icon, size: 48, color: Colors.white),
-                ),
+                aspectRatio: _imageAspectRatio,
+                // Empty-string URLs (a real data-quality case in
+                // `cms_products.img` — see docs/BACKEND_MAPPING_REPORT.md)
+                // are treated as "no image" at the repository mapping
+                // boundary, but the null-check stays defensive here too.
+                child: (imageUrl == null || imageUrl!.isEmpty)
+                    ? const ProductImagePlaceholder()
+                    : CachedNetworkImage(
+                        imageUrl: imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            const ProductImagePlaceholder(),
+                        errorWidget: (context, url, error) =>
+                            const ProductImagePlaceholder(),
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
                   AppSpacing.md,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  AppSpacing.md,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -88,28 +105,29 @@ class ProductCard extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleSmall,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
-                        height: 1.3,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.xs),
                     PriceTag(price: price),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
                     SizedBox(
                       width: double.infinity,
-                      height: 42,
+                      height: 34,
                       child: FilledButton.tonal(
                         onPressed: onSendInquiry,
                         style: FilledButton.styleFrom(
                           padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
@@ -118,7 +136,7 @@ class ProductCard extends StatelessWidget {
                           sendInquiryLabel,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelLarge,
+                          style: theme.textTheme.labelMedium,
                         ),
                       ),
                     ),

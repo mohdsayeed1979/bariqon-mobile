@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import '../constants/app_sizes.dart';
 import '../theme/app_colors.dart';
 
 /// Shared "not built yet" body for a tab-root screen, per the Phase 2A
@@ -28,7 +29,7 @@ class ComingSoonPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: AppColors.gold),
+            Icon(icon, size: AppIconSize.feature, color: AppColors.gold),
             const SizedBox(height: 16),
             Text(
               title,

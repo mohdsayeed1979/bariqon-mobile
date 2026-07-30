@@ -48,6 +48,21 @@ List<Product> applyProductFilters({
   return list;
 }
 
+/// Other products in the same category as [product], excluding [product]
+/// itself — backs Product Detail's Related Products rail. Pure/local, same
+/// as [applyProductFilters]: operates over an already-fetched list (see
+/// `catalog_providers.dart`'s `productsProvider`), not a backend query.
+List<Product> relatedProducts(
+  List<Product> allProducts,
+  Product product, {
+  int limit = 6,
+}) {
+  final related = allProducts
+      .where((p) => p.categoryId == product.categoryId && p.id != product.id)
+      .toList();
+  return related.length > limit ? related.sublist(0, limit) : related;
+}
+
 /// Generic, category-derived mock specification values for Product
 /// Detail's "Specifications" section — per-category rather than
 /// per-product, so this doesn't require hand-authoring specs for every
@@ -64,7 +79,11 @@ List<Product> applyProductFilters({
   const originAr = 'البحرين';
 
   return switch (categoryId) {
-    'luxury-gift-boxes' => (
+    // '1' is the real `cms_categories.id` for Luxury Gift Boxes (see
+    // docs/BACKEND_MAPPING_REPORT.md §2) — the mock repository's own slug
+    // id is matched alongside it so both data sources still get tailored
+    // copy instead of falling through to the generic case below.
+    'luxury-gift-boxes' || '1' => (
       material: isAr ? 'خشب ونسيج مضفور' : 'Wood & woven fabric',
       origin: isAr ? originAr : origin,
       packaging: isAr ? 'صندوق هدايا جاهز للتقديم' : 'Gift-ready presentation box',

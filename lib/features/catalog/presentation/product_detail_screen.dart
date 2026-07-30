@@ -1,15 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/widgets/auto_carousel.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/price_tag.dart';
+import '../../../core/widgets/product_image_placeholder.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
-import '../data/mock_catalog_data.dart';
+import '../domain/entities/category.dart';
+import 'controllers/catalog_providers.dart';
 import 'utils/product_filter_utils.dart';
 import 'widgets/product_section.dart';
 
@@ -19,10 +21,14 @@ import 'widgets/product_section.dart';
 /// from any [ProductCard] tap (Home, Category Detail, Product Listing,
 /// Related Products itself).
 ///
+/// Product/category/related-products data come from [productByIdProvider]/
+/// [categoriesProvider]/[productsProvider] as of Phase 5 (Supabase when
+/// configured, mock otherwise — see catalog_providers.dart).
+///
 /// Reuses [AutoCarousel] (built for Home's hero banner) for the gallery
-/// and [ProductSection] (built for Home's product rails) for Related
-/// Products, rather than re-implementing either — per the Phase 2D
-/// reusability requirement.
+/// when a product has no real photo, and [ProductSection] (built for
+/// Home's product rails) for Related Products, rather than
+/// re-implementing either — per the Phase 2D reusability requirement.
 class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
@@ -32,7 +38,38 @@ class ProductDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final product = MockCatalogData.productById(productId);
+    final productAsync = ref.watch(productByIdProvider(productId));
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final allProductsAsync = ref.watch(productsProvider);
+
+    final loading = productAsync.isLoading ||
+        categoriesAsync.isLoading ||
+        allProductsAsync.isLoading;
+    final error = productAsync.error ?? categoriesAsync.error ?? allProductsAsync.error;
+
+    if (loading) {
+      return Scaffold(
+        appBar: BrandedAppBar(title: l10n.productsTitle, showSearchAction: false),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        appBar: BrandedAppBar(title: l10n.productsTitle, showSearchAction: false),
+        body: Center(
+          child: ErrorStateView(
+            onRetry: () {
+              ref.invalidate(productByIdProvider(productId));
+              ref.invalidate(categoriesProvider);
+              ref.invalidate(productsProvider);
+            },
+          ),
+        ),
+      );
+    }
+
+    final product = productAsync.value;
 
     if (product == null) {
       return Scaffold(
@@ -49,9 +86,15 @@ class ProductDetailScreen extends ConsumerWidget {
       );
     }
 
-    final category = MockCatalogData.categoryById(product.categoryId);
+    Category? category;
+    for (final c in categoriesAsync.value!) {
+      if (c.id == product.categoryId) {
+        category = c;
+        break;
+      }
+    }
     final specs = mockSpecificationValues(product.categoryId, locale);
-    final related = MockCatalogData.relatedProducts(product);
+    final related = relatedProducts(allProductsAsync.value!, product);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -59,25 +102,19 @@ class ProductDetailScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
         children: [
-          AutoCarousel(
-            itemCount: 3,
+          SizedBox(
             height: 280,
-            viewportFraction: 1.0,
-            itemBuilder: (context, index) => Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: index.isEven ? Alignment.topLeft : Alignment.topRight,
-                  end: index.isEven ? Alignment.bottomRight : Alignment.bottomLeft,
-                  colors: [
-                    product.placeholderColor.withValues(alpha: 0.9 - index * 0.1),
-                    product.placeholderColor.withValues(alpha: 0.5),
-                  ],
-                ),
-              ),
-              child: Center(
-                child: Icon(product.icon, size: 110, color: Colors.white),
-              ),
-            ),
+            width: double.infinity,
+            child: (product.imageUrl == null || product.imageUrl!.isEmpty)
+                ? const ProductImagePlaceholder()
+                : CachedNetworkImage(
+                    imageUrl: product.imageUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const ProductImagePlaceholder(),
+                    errorWidget: (context, url, error) =>
+                        const ProductImagePlaceholder(),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -114,7 +151,7 @@ class ProductDetailScreen extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           onPressed: () =>
-                              context.push('/category/${category.id}'),
+                              context.push('/category/${category!.id}'),
                         ),
                       ),
                   ],

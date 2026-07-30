@@ -1,48 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_bar_search_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
+import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/filter_chip_row.dart';
 import '../../../core/widgets/product_results_view.dart';
 import '../../../core/widgets/sort_dropdown.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/mock_catalog_data.dart';
+import 'controllers/catalog_providers.dart';
 import 'utils/product_filter_utils.dart';
 
-/// Product Listing screen — all mock products, with search + category
-/// filter + price filter + sort, per the Phase 2D brief. Pushed outside
-/// the bottom-nav shell, matching Category Detail's pattern. Reached from
-/// "View All" on any Home product rail.
+/// Product Listing screen — search + category filter + price filter +
+/// sort over the full catalog, per the Phase 2D brief. Backed by
+/// [categoriesProvider]/[productsProvider] as of Phase 5 (Supabase when
+/// configured, mock otherwise — see catalog_providers.dart). Pushed
+/// outside the bottom-nav shell, matching Category Detail's pattern.
+/// Reached from "View All" on any Home product rail.
 ///
 /// Shares [applyProductFilters]/[ProductSortOption] and
 /// [ProductResultsView] with Category Detail rather than re-implementing
 /// filtering or result rendering — the only thing unique to this screen is
 /// the extra category filter dimension (Category Detail's category is
 /// fixed, this one's is chosen via a chip).
-class ProductListingScreen extends StatefulWidget {
+class ProductListingScreen extends ConsumerStatefulWidget {
   const ProductListingScreen({super.key});
 
   @override
-  State<ProductListingScreen> createState() => _ProductListingScreenState();
+  ConsumerState<ProductListingScreen> createState() =>
+      _ProductListingScreenState();
 }
 
-class _ProductListingScreenState extends State<ProductListingScreen> {
-  bool _loading = true;
+class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
   String _searchQuery = '';
   int _categoryChipIndex = 0; // 0 = All
   int _priceFilterIndex = 0;
   ProductSortOption _sort = ProductSortOption.featured;
   final _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _loading = false);
-    });
-  }
 
   @override
   void dispose() {
@@ -64,24 +60,11 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final categories = MockCatalogData.categories;
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final productsAsync = ref.watch(productsProvider);
 
-    final categoryId = _categoryChipIndex == 0
-        ? null
-        : categories[_categoryChipIndex - 1].id;
-
-    final filtered = applyProductFilters(
-      source: MockCatalogData.allProducts,
-      locale: locale,
-      categoryId: categoryId,
-      searchQuery: _searchQuery,
-      priceFilterIndex: _priceFilterIndex,
-      sort: _sort,
-    );
-    final filtersActive = _searchQuery.isNotEmpty ||
-        _categoryChipIndex != 0 ||
-        _priceFilterIndex != 0 ||
-        _sort != ProductSortOption.featured;
+    final loading = categoriesAsync.isLoading || productsAsync.isLoading;
+    final error = categoriesAsync.error ?? productsAsync.error;
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.productsTitle, showSearchAction: false),
@@ -90,8 +73,10 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 900),
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _loading
+              duration: AppMotion.contentSwitch,
+              switchInCurve: AppMotion.standardCurve,
+              switchOutCurve: AppMotion.standardCurve,
+              child: loading
                   ? ListView(
                       key: const ValueKey('loading'),
                       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -107,16 +92,51 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                         ),
                       ],
                     )
-                  : ListView(
+                  : error != null
+                  ? Center(
+                      key: const ValueKey('error'),
+                      child: ErrorStateView(
+                        onRetry: () {
+                          ref.invalidate(categoriesProvider);
+                          ref.invalidate(productsProvider);
+                        },
+                      ),
+                    )
+                  : Builder(
                       key: const ValueKey('loaded'),
+                      builder: (context) {
+                        final categories = categoriesAsync.value!;
+                        final categoryId = _categoryChipIndex == 0
+                            ? null
+                            : categories[_categoryChipIndex - 1].id;
+                        final filtered = applyProductFilters(
+                          source: productsAsync.value!,
+                          locale: locale,
+                          categoryId: categoryId,
+                          searchQuery: _searchQuery,
+                          priceFilterIndex: _priceFilterIndex,
+                          sort: _sort,
+                        );
+                        final filtersActive = _searchQuery.isNotEmpty ||
+                            _categoryChipIndex != 0 ||
+                            _priceFilterIndex != 0 ||
+                            _sort != ProductSortOption.featured;
+
+                        return ListView(
                       padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                       children: [
+                        // Tighter vertical rhythm through the filter block
+                        // (sm/xs gaps instead of md/lg) per the "filters
+                        // consume too much vertical space" polish request
+                        // — FilterChipRow/SortDropdown themselves are
+                        // unchanged, so their own overflow-safe wrapping
+                        // still applies.
                         Padding(
                           padding: const EdgeInsets.fromLTRB(
                             AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.lg,
                             AppSpacing.md,
+                            AppSpacing.lg,
+                            AppSpacing.sm,
                           ),
                           child: AppBarSearchField(
                             controller: _searchController,
@@ -144,7 +164,7 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                           onSelected: (i) =>
                               setState(() => _categoryChipIndex = i),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -166,13 +186,13 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                           onSelected: (i) =>
                               setState(() => _priceFilterIndex = i),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
                           ),
                           child: Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,
@@ -199,7 +219,7 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.md),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -220,7 +240,9 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                             onEmptyAction: filtersActive ? _clearFilters : null,
                           ),
                         ),
-                      ],
+                          ],
+                        );
+                      },
                     ),
             ),
           ),

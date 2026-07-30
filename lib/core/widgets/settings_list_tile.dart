@@ -20,6 +20,14 @@ class SettingsListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Row already reorders its children for RTL automatically, but the
+    // chevron *glyph* doesn't — a disclosure indicator pointing "forward"
+    // needs to point left in RTL, not stay pointing right just because
+    // that's what looks right in LTR. Same pattern already used by
+    // CategoryDetailScreen's breadcrumb chevron.
+    final disclosureIcon = Directionality.of(context) == TextDirection.rtl
+        ? Icons.chevron_left
+        : Icons.chevron_right;
     return ListTile(
       leading: Icon(icon, color: theme.colorScheme.primary),
       title: Text(label),
@@ -39,7 +47,7 @@ class SettingsListTile extends StatelessWidget {
             ),
             const SizedBox(width: 4),
           ],
-          const Icon(Icons.chevron_right),
+          Icon(disclosureIcon),
         ],
       ),
       onTap: onTap,
