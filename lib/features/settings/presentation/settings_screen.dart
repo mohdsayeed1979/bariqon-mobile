@@ -10,8 +10,8 @@ import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/settings_controller.dart';
 
 /// Settings screen, per the Phase 4 brief — Language (real, reuses the
-/// existing [localeProvider]), Theme (real, local-only preference — see
-/// [themeModeProvider]), Notifications/About/Contact/Privacy/Terms (UI
+/// existing [localeProvider]), Theme (real, persisted across restarts —
+/// see [themeModeProvider]), Notifications/About/Contact/Privacy/Terms (UI
 /// only, per the brief). Reachable from Profile in every auth state.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -47,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (selected != null) {
-      ref.read(themeModeProvider.notifier).state = selected;
+      await ref.read(themeModeProvider.notifier).setThemeMode(selected);
     }
   }
 

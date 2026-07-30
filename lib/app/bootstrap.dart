@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/config/env_config.dart';
 import '../core/logging/app_logger.dart';
+import '../features/settings/presentation/controllers/settings_controller.dart';
 import 'app.dart';
 
 /// App entry sequence, per docs/ARCHITECTURE.md §9 and
@@ -80,7 +81,18 @@ Future<void> bootstrap() async {
         );
       }
 
-      runApp(const ProviderScope(child: BariqonApp()));
+      final initialThemeMode = await loadPersistedThemeMode();
+
+      runApp(
+        ProviderScope(
+          overrides: [
+            themeModeProvider.overrideWith(
+              () => ThemeModeController(initialThemeMode),
+            ),
+          ],
+          child: const BariqonApp(),
+        ),
+      );
     },
     (error, stackTrace) {
       AppLogger.instance.error(

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 
-/// Compact +/- quantity control, per the Phase 3 brief's "update
-/// quantities" requirement — used on Inquiry Cart line items today,
-/// generic enough to reuse anywhere a bounded integer needs stepping.
+/// +/- quantity control, per the Phase 3 brief's "update quantities"
+/// requirement — used on Inquiry Cart line items today, generic enough to
+/// reuse anywhere a bounded integer needs stepping. Buttons use explicit
+/// 48x48 constraints (the accessibility minimum tap target) rather than
+/// [IconButton]'s default sizing.
 class QuantityStepper extends StatelessWidget {
   const QuantityStepper({
     super.key,
@@ -31,7 +33,7 @@ class QuantityStepper extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.remove_circle_outline),
           tooltip: l10n.quantityDecreaseTooltip,
-          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: canDecrease ? () => onChanged(quantity - 1) : null,
         ),
         SizedBox(
@@ -45,7 +47,7 @@ class QuantityStepper extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.add_circle_outline),
           tooltip: l10n.quantityIncreaseTooltip,
-          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: canIncrease ? () => onChanged(quantity + 1) : null,
         ),
       ],
