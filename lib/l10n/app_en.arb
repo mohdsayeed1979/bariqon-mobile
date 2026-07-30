@@ -675,6 +675,151 @@
     "description": "Theme option."
   },
 
+  "securityTitle": "Security",
+  "@securityTitle": {
+    "description": "Settings row label, and the App Lock screen's app bar title."
+  },
+
+  "appLockDescription": "Require Biometric or PIN authentication to open Bariqon.",
+  "@appLockDescription": {
+    "description": "Explanatory copy at the top of the App Lock screen."
+  },
+
+  "appLockEnableRow": "Enable App Lock",
+  "@appLockEnableRow": {
+    "description": "App Lock screen's on/off switch label."
+  },
+
+  "appLockMethodTitle": "Authentication Method",
+  "@appLockMethodTitle": {
+    "description": "App Lock row label, and the method-picker dialog title."
+  },
+
+  "appLockMethodBiometric": "Biometric Lock",
+  "@appLockMethodBiometric": {
+    "description": "App Lock authentication method option."
+  },
+
+  "appLockMethodPin": "PIN Lock",
+  "@appLockMethodPin": {
+    "description": "App Lock authentication method option."
+  },
+
+  "appLockMethodNone": "Not set",
+  "@appLockMethodNone": {
+    "description": "App Lock method row value before a method has been chosen."
+  },
+
+  "appLockChooseMethodTitle": "Choose how to unlock Bariqon",
+  "@appLockChooseMethodTitle": {
+    "description": "Title of the Biometric/PIN method-picker dialog."
+  },
+
+  "appLockTimeoutTitle": "App Lock Timeout",
+  "@appLockTimeoutTitle": {
+    "description": "App Lock row label, and the timeout-picker dialog title."
+  },
+
+  "appLockTimeoutImmediately": "Immediately",
+  "@appLockTimeoutImmediately": {
+    "description": "App Lock timeout option — re-lock as soon as the app is backgrounded."
+  },
+
+  "appLockTimeoutOneMinute": "1 minute",
+  "@appLockTimeoutOneMinute": {
+    "description": "App Lock timeout option."
+  },
+
+  "appLockTimeoutFiveMinutes": "5 minutes",
+  "@appLockTimeoutFiveMinutes": {
+    "description": "App Lock timeout option."
+  },
+
+  "biometricUnavailableMessage": "Biometric authentication isn't available on this device.",
+  "@biometricUnavailableMessage": {
+    "description": "Shown when Biometric Lock is chosen but the device doesn't support it."
+  },
+
+  "biometricEnablePromptReason": "Authenticate to enable App Lock",
+  "@biometricEnablePromptReason": {
+    "description": "Reason string shown in the OS biometric prompt when turning on Biometric Lock."
+  },
+
+  "biometricUnlockPromptReason": "Authenticate to unlock Bariqon",
+  "@biometricUnlockPromptReason": {
+    "description": "Reason string shown in the OS biometric prompt on the lock screen."
+  },
+
+  "pinManagementCreateTitle": "Create PIN",
+  "@pinManagementCreateTitle": {
+    "description": "PIN management row label / dialog title."
+  },
+
+  "pinManagementChangeTitle": "Change PIN",
+  "@pinManagementChangeTitle": {
+    "description": "PIN management row label / dialog title."
+  },
+
+  "pinManagementRemoveTitle": "Remove PIN",
+  "@pinManagementRemoveTitle": {
+    "description": "PIN management row label / dialog title."
+  },
+
+  "pinCreatedSuccess": "PIN created.",
+  "@pinCreatedSuccess": {
+    "description": "Confirmation snackbar after creating a PIN."
+  },
+
+  "pinChangedSuccess": "PIN changed.",
+  "@pinChangedSuccess": {
+    "description": "Confirmation snackbar after changing the PIN."
+  },
+
+  "pinRemovedSuccess": "PIN removed.",
+  "@pinRemovedSuccess": {
+    "description": "Confirmation snackbar after removing the PIN."
+  },
+
+  "pinCurrentLabel": "Current PIN",
+  "@pinCurrentLabel": {
+    "description": "PIN field label — the lock screen's entry field, and the current-PIN step of change/remove."
+  },
+
+  "pinEnterNewLabel": "Enter new PIN",
+  "@pinEnterNewLabel": {
+    "description": "PIN field label — the first step of create/change PIN."
+  },
+
+  "pinConfirmLabel": "Confirm PIN",
+  "@pinConfirmLabel": {
+    "description": "PIN field label — the confirmation step of create/change PIN."
+  },
+
+  "pinTooShortError": "PIN must be at least 4 digits.",
+  "@pinTooShortError": {
+    "description": "Validation message when a PIN is too short."
+  },
+
+  "pinMismatchError": "PINs don't match.",
+  "@pinMismatchError": {
+    "description": "Validation message when PIN confirmation doesn't match."
+  },
+
+  "pinIncorrectError": "Incorrect PIN.",
+  "@pinIncorrectError": {
+    "description": "Validation message when an entered PIN doesn't verify."
+  },
+
+  "lockScreenTitle": "Bariqon is Locked",
+  "@lockScreenTitle": {
+    "description": "Heading on the App Lock challenge screen."
+  },
+
+  "lockScreenUnlockCta": "Unlock",
+  "@lockScreenUnlockCta": {
+    "description": "App Lock screen's unlock button (PIN submit, or retry-biometric)."
+  },
+
   "settingsNotificationsTitle": "Notifications",
   "@settingsNotificationsTitle": {
     "description": "Settings row label, and Notification Preferences screen app bar title."
@@ -736,6 +881,16 @@
   "contactAddressLabel": "Address",
   "@contactAddressLabel": {
     "description": "Contact screen row label."
+  },
+
+  "contactInstagramLabel": "Instagram",
+  "@contactInstagramLabel": {
+    "description": "Contact screen row label / footer icon tooltip."
+  },
+
+  "contactLinkFailedMessage": "Couldn't open that. Please try again.",
+  "@contactLinkFailedMessage": {
+    "description": "Snackbar shown when a contact link (WhatsApp/Instagram/email/phone) fails to launch — e.g. no matching app installed."
   },
 
   "legalPrivacyPolicyBody": "This is a placeholder Privacy Policy for the Bariqon mobile app. It will be replaced with Bariqon Trading's final, legally reviewed privacy policy before this app is published, covering what data is collected, how it is used, and how customers can exercise their privacy rights.",

@@ -2,9 +2,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_tables.dart';
 import '../../../core/error/exception_mapper.dart';
+import '../../../core/logging/app_logger.dart';
 import '../domain/entities/product.dart';
 import '../domain/product_repository.dart';
 import '../presentation/utils/product_placeholder_utils.dart';
+import 'catalog_cache_service.dart';
 
 /// Real `cms_products`-backed [ProductRepository], per
 /// [SupabaseTables.products]. Replaces the Phase 2/3 mock — same
@@ -15,10 +17,15 @@ import '../presentation/utils/product_placeholder_utils.dart';
 /// this size and lets every screen keep using the existing
 /// `applyProductFilters`-style client-side filtering/sorting instead of
 /// re-deriving it as server queries.
+///
+/// Falls back to [CatalogCacheService]'s last-known-good snapshot when the
+/// live fetch fails — see [SupabaseCategoryRepository]'s doc comment for
+/// why.
 class SupabaseProductRepository implements ProductRepository {
-  SupabaseProductRepository(this._client);
+  SupabaseProductRepository(this._client, this._cache);
 
   final SupabaseClient _client;
+  final CatalogCacheService _cache;
 
   @override
   Future<List<Product>> getProducts() async {
@@ -30,9 +37,19 @@ class SupabaseProductRepository implements ProductRepository {
           .eq('enabled', true)
           .eq('is_deleted', false)
           .order('display_order');
-
-      return rows.map(_mapRow).toList();
+      final rowMaps = (rows as List<dynamic>).cast<Map<String, dynamic>>();
+      await _cache.setProducts(rowMaps);
+      return rowMaps.map(_mapRow).toList();
     } catch (error, stackTrace) {
+      final cached = _cache.getProducts();
+      if (cached != null) {
+        AppLogger.instance.warning(
+          'getProducts failed, serving cached snapshot',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return cached.map(_mapRow).toList();
+      }
       throw ExceptionMapper.map(error, stackTrace);
     }
   }

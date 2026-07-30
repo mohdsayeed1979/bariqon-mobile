@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/catalog/presentation/controllers/catalog_providers.dart';
 import '../features/inquiry/presentation/controllers/inquiry_cart_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 
@@ -13,7 +14,10 @@ import '../l10n/generated/app_localizations.dart';
 ///
 /// Watches [inquiryCartItemCountProvider] (Phase 3) to badge the Inquiry
 /// tab — the one piece of cross-cutting cart state the shell itself needs
-/// to know about.
+/// to know about. Also watches [catalogRealtimeSyncProvider] purely to
+/// keep it alive for the app's lifetime — this is the one widget that's
+/// always mounted once past the splash screen, so it's the natural place
+/// to start the catalog's realtime subscription.
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -45,6 +49,7 @@ class AppShell extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final cartCount = ref.watch(inquiryCartItemCountProvider);
     final destinations = _destinations(l10n, cartCount);
+    ref.watch(catalogRealtimeSyncProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {

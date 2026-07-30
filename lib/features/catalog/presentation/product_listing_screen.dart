@@ -161,7 +161,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                             horizontal: AppSpacing.lg,
                           ),
                           child: Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,

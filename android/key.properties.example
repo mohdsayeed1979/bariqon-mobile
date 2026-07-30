@@ -1,0 +1,19 @@
+# Copy this file to android/key.properties (same directory as this file,
+# the Android project root — NOT app/) and fill in your real values once
+# you've generated a release keystore. android/key.properties is already
+# gitignored, so it (and the .jks/.keystore file it points at) never gets
+# committed.
+#
+# Generate a keystore (run this yourself — see
+# https://flutter.dev/to/reference-keystore for the full guide):
+#   keytool -genkey -v -keystore ~/bariqon-release.jks -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias bariqon
+#
+# Store the .jks file and these passwords somewhere safe outside this
+# repo — losing them means you can never publish an update to the same
+# Play Store listing again under this app's identity.
+
+storePassword=REPLACE_WITH_YOUR_KEYSTORE_PASSWORD
+keyPassword=REPLACE_WITH_YOUR_KEY_PASSWORD
+keyAlias=bariqon
+storeFile=/absolute/path/to/bariqon-release.jks

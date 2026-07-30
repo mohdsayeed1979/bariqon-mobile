@@ -92,6 +92,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(height: 1),
           SettingsListTile(
+            icon: Icons.lock_outline,
+            label: l10n.securityTitle,
+            onTap: () => context.push('/settings/security'),
+          ),
+          const Divider(height: 1),
+          SettingsListTile(
             icon: Icons.notifications_outlined,
             label: l10n.settingsNotificationsTitle,
             onTap: () => context.push('/settings/notifications'),

@@ -10,6 +10,7 @@ import '../core/config/app_config.dart';
 import '../core/theme/app_theme.dart';
 import '../features/settings/presentation/controllers/settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'app_lock_gate.dart';
 import 'router.dart';
 
 /// Current app locale. Hand-written (no codegen — see Phase 1 summary),
@@ -35,6 +36,11 @@ class BariqonApp extends ConsumerWidget {
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      // Sits above the Navigator (router builds inside this), so App Lock
+      // can enforce itself regardless of which route is current rather
+      // than every screen needing to check lock state itself.
+      builder: (context, child) =>
+          AppLockGate(child: child ?? const SizedBox.shrink()),
       theme: AppTheme.light(isRtl: isRtl),
       darkTheme: AppTheme.dark(isRtl: isRtl),
       themeMode: themeMode,
