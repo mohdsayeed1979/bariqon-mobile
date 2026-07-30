@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Used by `xcodebuild -exportArchive` (and `flutter build ipa`) to export
+	a signed .ipa for TestFlight/App Store from an .xcarchive. "app-store"
+	is the correct method for both — TestFlight builds are uploaded the
+	same way as App Store submissions, just held in review-pending state
+	until you choose to release them.
+
+	teamID is intentionally left unset: the Apple Developer Program
+	enrollment isn't active yet, so there's no team to reference. Once it
+	is, add:
+		<key>teamID</key>
+		<string>YOUR_10_CHARACTER_TEAM_ID</string>
+	(find it at developer.apple.com/account under Membership Details).
+	Automatic signing needs this key present for a non-interactive
+	`xcodebuild -exportArchive`/`flutter build ipa` export; archiving and
+	exporting through Xcode's own Organizer UI does not require it (Xcode
+	resolves the team interactively there instead).
+	-->
+	<key>method</key>
+	<string>app-store</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>compileBitcode</key>
+	<false/>
+</dict>
+</plist>

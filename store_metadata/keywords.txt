@@ -1,0 +1,14 @@
+Apple's Keywords field: 100 characters max, comma-separated, no spaces
+after commas (spaces count against the limit and add nothing — Apple
+matches on the comma-separated terms regardless). Don't repeat words
+already in the app name ("Bariqon") or subtitle — Apple indexes those
+separately, so repeating them here just wastes characters.
+
+gift boxes,packaging,hospitality supplies,corporate gifts,Bahrain,wholesale,B2B,catalog,custom packaging,trading
+
+(112 characters — over the limit, trim before submission, e.g. drop
+"custom packaging" since "packaging" is already present:)
+
+gift boxes,packaging,hospitality supplies,corporate gifts,Bahrain,wholesale,B2B,catalog,trading
+
+(95 characters — fits.)

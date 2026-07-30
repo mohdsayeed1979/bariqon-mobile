@@ -1,0 +1,27 @@
+App Store Connect's "What's New in This Version" field — required on
+every submission, including the very first. For a first release, Apple
+accepts generic launch copy (there's no prior version to diff against).
+
+--- v1.0 (first TestFlight / App Store submission) ---
+
+Welcome to Bariqon — browse our catalog of luxury gift boxes, hospitality
+supplies, and custom packaging, and send us a direct inquiry, right from
+your phone.
+
+• Browse and search the full product catalog
+• Save your profile for faster inquiries, or continue as a guest
+• Full English and Arabic support
+• Light, dark, and system-matched appearance
+
+--- Template for future versions ---
+
+Keep this file updated per release rather than writing it fresh under
+deadline pressure. Suggested shape:
+
+vX.Y.Z
+• <user-visible change 1>
+• <user-visible change 2>
+• Bug fixes and performance improvements
+
+Only list what a user would notice — internal refactors, dependency
+bumps, and test changes don't belong here.
