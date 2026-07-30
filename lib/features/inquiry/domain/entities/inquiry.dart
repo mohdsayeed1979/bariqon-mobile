@@ -3,12 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'inquiry_contact_details.dart';
 import 'inquiry_item.dart';
 
-/// A completed (locally, in this phase — no backend submission yet)
-/// inquiry: the cart snapshot plus contact details plus a mock reference
-/// number, shown on the Confirmation screen. [referenceNumber] is
-/// generated client-side purely for display continuity — the real
-/// reference (if any) would come back from Supabase once submission is
-/// actually wired up.
+/// A completed inquiry: the cart snapshot plus contact details plus a
+/// reference number, submitted via [InquiryRepository][inquiry_repository.dart]
+/// and shown on the Confirmation screen. [referenceNumber] is generated
+/// client-side and is the *only* reference number that will ever exist for
+/// this submission — the anon Supabase role can insert into
+/// `cms_contact_messages` but cannot read rows back, so there is no
+/// server-generated id/timestamp this app could substitute in instead.
 @immutable
 class Inquiry {
   const Inquiry({

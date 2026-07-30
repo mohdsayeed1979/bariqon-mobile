@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/user_facing_message.dart';
+import '../../../core/network/supabase_service.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
@@ -10,18 +12,26 @@ import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/inquiry_summary_card.dart';
 import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import 'controllers/inquiry_cart_controller.dart';
+import '../../catalog/presentation/controllers/catalog_providers.dart';
+import '../../catalog/presentation/utils/catalog_selectors.dart';
+import '../data/supabase_inquiry_repository.dart';
 import '../domain/entities/inquiry.dart';
 import '../domain/entities/inquiry_contact_details.dart';
+import '../domain/entities/inquiry_item.dart';
+import '../domain/inquiry_repository.dart';
+import 'controllers/inquiry_cart_controller.dart';
+
+/// The single place the inquiry-submission repository is chosen, mirroring
+/// [inquiryCartRepositoryProvider] and the Catalog/Auth provider pattern.
+final inquiryRepositoryProvider = Provider<InquiryRepository>((ref) {
+  return SupabaseInquiryRepository(ref.watch(supabaseClientProvider));
+});
 
 /// Inquiry Details Form, per the Phase 3 brief — Name/Company/Email/
-/// Mobile/Country/Notes, **validation only, no submission**: there's no
-/// backend to send to yet. "Submit" here means completing the local mock
-/// flow — build an [Inquiry] snapshot with a client-generated reference
-/// number, clear the cart, and hand off to the Confirmation screen. When
-/// real submission exists, only this method's body changes (an actual
-/// repository call replaces the local snapshot); the form/validation code
-/// around it doesn't.
+/// Mobile/Country/Notes. Submitting sends the form + cart snapshot to
+/// `cms_contact_messages` via [InquiryRepository]; only on success does it
+/// clear the cart and hand off to the Confirmation screen — a failed
+/// submission leaves the cart and form intact so the user can retry.
 class InquiryDetailsFormScreen extends ConsumerStatefulWidget {
   const InquiryDetailsFormScreen({super.key});
 
@@ -39,6 +49,7 @@ class _InquiryDetailsFormScreenState
   final _mobileController = TextEditingController();
   final _countryController = TextEditingController();
   final _notesController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -62,7 +73,24 @@ class _InquiryDetailsFormScreenState
     return 'INQ-$datePart-$suffix';
   }
 
-  void _submit() {
+  /// `cms_contact_messages` has one free-text `sector` column per
+  /// submission, not a per-item field, so every distinct category among
+  /// the cart's items is resolved to its display name and joined — falling
+  /// back to the raw category id for the (should-be-rare) case where
+  /// [categoriesProvider] hasn't loaded a match, so a submission never
+  /// blocks on that lookup.
+  String _resolveSector(List<InquiryItem> items) {
+    final categories = ref.read(categoriesProvider).value ?? const [];
+    final names = <String>{};
+    for (final item in items) {
+      final category = categoryById(categories, item.product.categoryId);
+      names.add(category?.nameEn ?? item.product.categoryId);
+    }
+    return names.join(', ');
+  }
+
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     final items = ref.read(inquiryCartProvider);
@@ -80,8 +108,22 @@ class _InquiryDetailsFormScreenState
       submittedAt: DateTime.now(),
     );
 
-    ref.read(inquiryCartProvider.notifier).clear();
-    context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    setState(() => _isSubmitting = true);
+    try {
+      await ref
+          .read(inquiryRepositoryProvider)
+          .submit(inquiry, sector: _resolveSector(items));
+      if (!mounted) return;
+      ref.read(inquiryCartProvider.notifier).clear();
+      context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(context, e))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -162,15 +204,24 @@ class _InquiryDetailsFormScreenState
                           controller: _notesController,
                           maxLines: 4,
                           textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submit(),
+                          onFieldSubmitted: (_) =>
+                              _isSubmitting ? null : _submit(),
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         SizedBox(
                           width: double.infinity,
                           height: 48,
                           child: FilledButton(
-                            onPressed: _submit,
-                            child: Text(l10n.inquiryFormSubmit),
+                            onPressed: _isSubmitting ? null : _submit,
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(l10n.inquiryFormSubmit),
                           ),
                         ),
                       ],

@@ -16,6 +16,9 @@ import 'package:bariqon_app/features/catalog/domain/entities/product.dart';
 import 'package:bariqon_app/features/catalog/domain/product_repository.dart';
 import 'package:bariqon_app/features/catalog/presentation/controllers/catalog_providers.dart';
 import 'package:bariqon_app/features/catalog/presentation/product_detail_screen.dart';
+import 'package:bariqon_app/features/inquiry/domain/entities/inquiry.dart';
+import 'package:bariqon_app/features/inquiry/domain/inquiry_repository.dart';
+import 'package:bariqon_app/features/inquiry/presentation/inquiry_details_form_screen.dart';
 import 'package:bariqon_app/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,6 +35,13 @@ class _FakeProductRepository implements ProductRepository {
   Future<List<Product>> getProducts() async => MockCatalogData.allProducts;
 }
 
+/// Records what would have been submitted, without touching Supabase —
+/// keeps the suite deterministic and offline like every other fake here.
+class _FakeInquiryRepository implements InquiryRepository {
+  @override
+  Future<void> submit(Inquiry inquiry, {required String sector}) async {}
+}
+
 /// Fresh instances every call — a shared top-level list would let
 /// [MockAuthRepository]'s signed-in state leak between test cases.
 /// `Override` (the precise return element type) isn't exported by
@@ -41,6 +51,7 @@ _testOverrides() => [
   categoryRepositoryProvider.overrideWithValue(_FakeCategoryRepository()),
   productRepositoryProvider.overrideWithValue(_FakeProductRepository()),
   authRepositoryProvider.overrideWithValue(MockAuthRepository()),
+  inquiryRepositoryProvider.overrideWithValue(_FakeInquiryRepository()),
 ];
 
 Future<void> _pumpPastSplash(WidgetTester tester) async {

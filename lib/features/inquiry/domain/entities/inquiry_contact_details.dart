@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 
-/// Contact fields collected on the Inquiry Details Form — field shape
-/// mirrors the confirmed `cms_contact_messages` columns from
-/// docs/API_CONTRACT.md §3 (name, company, email, phone) plus `country`
-/// and `notes`/specifications, so this maps cleanly onto the real table
-/// once submission is actually wired to Supabase (not in this phase).
+/// Contact fields collected on the Inquiry Details Form. [fullName],
+/// [email], [mobile], and [company] map directly onto `cms_contact_messages`
+/// columns (`name`, `email`, `phone`, `company`). [country] and [notes] do
+/// **not** — that table has no matching columns for either — so
+/// [SupabaseInquiryRepository][supabase_inquiry_repository.dart] folds both
+/// into the free-text `specs` column instead of sending them as fields.
 @immutable
 class InquiryContactDetails {
   const InquiryContactDetails({
