@@ -11,6 +11,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/app_user.dart';
 import '../../auth/domain/entities/auth_session.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
+import '../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
 
 /// Profile tab root, per docs/SCREEN_SPECIFICATIONS.md §18 and the Phase 4
 /// brief — branches on [AuthSession] rather than being a single fixed
@@ -128,6 +129,12 @@ class _SignedInProfile extends ConsumerWidget {
     if (confirmed == true) {
       try {
         await ref.read(authControllerProvider.notifier).signOut();
+        // The inquiry cart is local, session-only state (see
+        // InMemoryInquiryCartRepository) — not tied to any account, so it
+        // survives sign-out on its own. On a shared device, the next
+        // person to sign in would otherwise see (and could submit an
+        // inquiry with) the previous user's cart.
+        ref.read(inquiryCartProvider.notifier).clear();
       } catch (e) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

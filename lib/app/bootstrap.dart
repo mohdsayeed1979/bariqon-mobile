@@ -27,6 +27,42 @@ Future<void> bootstrap() async {
         );
       };
 
+      // Flutter's own fallback for a widget that throws mid-build is a
+      // bare, unstyled gray box — blank in release builds, since Flutter
+      // deliberately hides the technical message there. FlutterError.onError
+      // above only logs; it doesn't change what actually renders in place
+      // of the failed widget. This is the last-resort UI for that case, so
+      // it deliberately doesn't reach for Theme/AppLocalizations — by the
+      // time this runs, something's already gone wrong in a way regular
+      // error handling didn't catch, and depending on app context that may
+      // not even be available here.
+      ErrorWidget.builder = (details) {
+        return const ColoredBox(
+          color: Colors.white,
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 40,
+                    color: Colors.black45,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    "Something went wrong displaying this. Please try again.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      };
+
       logger.info('Environment: ${EnvConfig.environment.label}');
 
       if (!EnvConfig.isConfigured) {
