@@ -39,7 +39,11 @@ class SettingsListTile extends StatelessWidget {
             ),
             const SizedBox(width: 4),
           ],
-          const Icon(Icons.chevron_right),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left
+                : Icons.chevron_right,
+          ),
         ],
       ),
       onTap: onTap,

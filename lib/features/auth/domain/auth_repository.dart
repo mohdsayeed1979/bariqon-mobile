@@ -1,10 +1,10 @@
 import 'entities/app_user.dart';
 
-/// The stable contract [AuthController] depends on — a future
-/// Supabase-backed implementation (real sign-in/sign-up/password reset)
-/// can replace [MockAuthRepository] without changing the controller or
-/// any screen, mirroring the pattern established for the Inquiry Cart in
-/// Phase 3.
+/// The stable contract [AuthController] depends on — real sign-in/sign-up/
+/// password reset is backed by [SupabaseAuthRepository][supabase_auth_repository.dart]
+/// today; a test-only [MockAuthRepository][mock_auth_repository.dart] fixture
+/// implements the same contract without touching the controller or any
+/// screen.
 abstract class AuthRepository {
   Future<AppUser> login({required String email, required String password});
 

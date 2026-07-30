@@ -12,8 +12,12 @@ import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
 
 /// Forgot Password screen, per the Phase 4 brief — email input, then a
-/// success confirmation in place (no real email is sent; [MockAuthRepository]
-/// just simulates the delay).
+/// success confirmation in place. Backed by real Supabase Auth
+/// (`resetPasswordForEmail`) via
+/// [SupabaseAuthRepository][supabase_auth_repository.dart] — a real reset
+/// email is sent. The success screen is shown unconditionally on request
+/// (not just when the address exists), matching Supabase Auth's own
+/// behavior of not revealing whether an email is registered.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 

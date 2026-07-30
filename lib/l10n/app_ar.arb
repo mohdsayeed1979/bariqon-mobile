@@ -1,22 +1,15 @@
 {
   "@@locale": "ar",
-
-  "appName": "بريقون",
   "retry": "إعادة المحاولة",
-  "loading": "جارٍ التحميل…",
-  "ok": "موافق",
   "cancel": "إلغاء",
-  "close": "إغلاق",
   "genericErrorTitle": "حدث خطأ ما",
   "genericErrorMessage": "تعذّر إتمام ذلك. يرجى المحاولة مرة أخرى.",
   "networkErrorMessage": "تعذّر الاتصال. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
-  "offlineBannerMessage": "أنت غير متصل بالإنترنت. يتم عرض المحتوى المحفوظ.",
   "emptyStateGenericMessage": "لا يوجد شيء هنا بعد.",
   "navHome": "الرئيسية",
   "navCategories": "الفئات",
   "navInquiry": "الاستفسار",
   "navProfile": "الملف الشخصي",
-  "comingSoonBadge": "قريبًا",
   "searchTitle": "بحث",
   "searchHint": "ابحث عن المنتجات…",
   "searchPromptMessage": "ابدأ الكتابة للبحث في منتجاتنا.",
@@ -62,10 +55,8 @@
   "categoryFilterUnder15": "أقل من 15 د.ب",
   "categoryFilter15to25": "15–25 د.ب",
   "categoryFilterOver25": "أكثر من 25 د.ب",
-  "categoryEmptyNoProductsTitle": "لا يوجد شيء هنا بعد",
   "categoryEmptyNoProductsMessage": "لا توجد منتجات مدرجة في هذه الفئة بعد — تابعونا قريبًا، أو تصفحوا فئة أخرى.",
   "categoryEmptyNoProductsCta": "تصفح فئات أخرى",
-  "categoryEmptyFilteredTitle": "لا توجد نتائج",
   "categoryEmptyFilteredMessage": "لا توجد منتجات تطابق بحثك أو الفلاتر المحددة. جرّب إزالتها.",
   "categoryEmptyFilteredCta": "إزالة الفلاتر",
   "categoryNotFound": "الفئة غير موجودة.",
@@ -74,7 +65,6 @@
   "filterCategoryLabel": "الفئة",
   "filterPriceLabel": "السعر",
   "productDetailFeaturesHeading": "المميزات",
-  "productDetailCategoryLabel": "الفئة",
   "productDetailRelatedHeading": "منتجات ذات صلة",
   "productNotFoundTitle": "المنتج غير موجود",
   "productNotFoundMessage": "لم نتمكن من العثور على هذا المنتج. ربما تمت إزالته.",
@@ -87,7 +77,9 @@
   "inquiryCartItemsLabel": "{count, plural, one{تم اختيار منتج واحد} other{تم اختيار {count} منتجات}}",
   "@inquiryCartItemsLabel": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "inquiryEstimatedTotalLabel": "الإجمالي التقديري",
@@ -136,7 +128,9 @@
   "forgotPasswordSuccessMessage": "إذا كان هناك حساب مرتبط بـ {email}، فقد تم إرسال رابط إعادة تعيين كلمة المرور.",
   "@forgotPasswordSuccessMessage": {
     "placeholders": {
-      "email": { "type": "String" }
+      "email": {
+        "type": "String"
+      }
     }
   },
   "forgotPasswordBackToSignIn": "العودة إلى تسجيل الدخول",
@@ -158,7 +152,9 @@
   "aboutVersionLabel": "الإصدار {version}",
   "@aboutVersionLabel": {
     "placeholders": {
-      "version": { "type": "String" }
+      "version": {
+        "type": "String"
+      }
     }
   },
   "contactEmailLabel": "البريد الإلكتروني",

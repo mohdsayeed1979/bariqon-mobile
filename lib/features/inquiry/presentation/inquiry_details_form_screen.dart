@@ -51,7 +51,7 @@ class _InquiryDetailsFormScreenState
     super.dispose();
   }
 
-  String _generateMockReference() {
+  String _generateReferenceNumber() {
     final now = DateTime.now();
     final datePart =
         '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
@@ -67,7 +67,7 @@ class _InquiryDetailsFormScreenState
 
     final items = ref.read(inquiryCartProvider);
     final inquiry = Inquiry(
-      referenceNumber: _generateMockReference(),
+      referenceNumber: _generateReferenceNumber(),
       items: items,
       contact: InquiryContactDetails(
         fullName: _nameController.text.trim(),

@@ -14,8 +14,8 @@ import '../../../l10n/generated/app_localizations.dart';
 import 'controllers/auth_controller.dart';
 
 /// Sign In screen, per the Phase 4 brief — email/password, Remember Me,
-/// Forgot Password, Continue as Guest. Local mock auth only: any
-/// email/password combination "succeeds" via [MockAuthRepository].
+/// Forgot Password, Continue as Guest. Backed by real Supabase Auth via
+/// [SupabaseAuthRepository][supabase_auth_repository.dart].
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 

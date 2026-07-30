@@ -1,843 +1,649 @@
 {
   "@@locale": "en",
-
-  "appName": "Bariqon",
-  "@appName": {
-    "description": "App name, shown on the splash screen and in the OS app switcher."
-  },
-
   "retry": "Retry",
   "@retry": {
     "description": "Generic retry action on error states."
   },
-
-  "loading": "Loading…",
-  "@loading": {
-    "description": "Generic loading label."
-  },
-
-  "ok": "OK",
-  "@ok": {
-    "description": "Generic confirmation action."
-  },
-
   "cancel": "Cancel",
   "@cancel": {
     "description": "Generic dismiss/cancel action."
   },
-
-  "close": "Close",
-  "@close": {
-    "description": "Generic close action."
-  },
-
   "genericErrorTitle": "Something went wrong",
   "@genericErrorTitle": {
     "description": "Title shown on a generic ErrorStateView when a more specific message isn't available."
   },
-
   "genericErrorMessage": "We couldn't complete that. Please try again.",
   "@genericErrorMessage": {
     "description": "Body text paired with genericErrorTitle."
   },
-
   "networkErrorMessage": "Couldn't connect. Check your internet connection and try again.",
   "@networkErrorMessage": {
     "description": "Shown when a request fails due to connectivity/timeout."
   },
-
-  "offlineBannerMessage": "You're offline. Showing saved content.",
-  "@offlineBannerMessage": {
-    "description": "Persistent banner shown while the device has no connectivity."
-  },
-
   "emptyStateGenericMessage": "Nothing here yet.",
   "@emptyStateGenericMessage": {
     "description": "Fallback empty-state message when a screen-specific one isn't provided."
   },
-
   "navHome": "Home",
   "@navHome": {
     "description": "Bottom navigation tab label."
   },
-
   "navCategories": "Categories",
   "@navCategories": {
     "description": "Bottom navigation tab label."
   },
-
   "navInquiry": "Inquiry",
   "@navInquiry": {
     "description": "Bottom navigation tab label."
   },
-
   "navProfile": "Profile",
   "@navProfile": {
     "description": "Bottom navigation tab label."
   },
-
-  "comingSoonBadge": "Coming soon",
-  "@comingSoonBadge": {
-    "description": "Placeholder badge shown on tab root screens not yet implemented (Categories, Inquiry, Profile as of Phase 2B — Home got its real UI this phase)."
-  },
-
   "searchTitle": "Search",
   "@searchTitle": {
     "description": "Title of the search screen."
   },
-
   "searchHint": "Search products…",
   "@searchHint": {
     "description": "Placeholder text in the search field. The field is UI-only in Phase 2A — no query is executed yet."
   },
-
   "searchPromptMessage": "Start typing to search our products.",
   "@searchPromptMessage": {
     "description": "Shown on the Search screen before the user has typed anything."
   },
-
   "toggleLanguageTooltip": "Switch language",
   "@toggleLanguageTooltip": {
     "description": "Tooltip/semantic label for the temporary language toggle in the app bar, ahead of the real Language Selector screen (Settings, later phase)."
   },
-
   "homeWelcomeTitle": "Welcome to Bariqon",
   "@homeWelcomeTitle": {
     "description": "Home screen welcome section heading."
   },
-
   "homeWelcomeSubtitle": "Premium hospitality, gifting & packaging — curated for you.",
   "@homeWelcomeSubtitle": {
     "description": "Home screen welcome section subheading."
   },
-
   "homeHeroSlide1Title": "Luxury Gift Boxes",
   "@homeHeroSlide1Title": {
     "description": "Hero carousel slide 1 title."
   },
-
   "homeHeroSlide1Subtitle": "Elegantly crafted for every occasion",
   "@homeHeroSlide1Subtitle": {
     "description": "Hero carousel slide 1 subtitle."
   },
-
   "homeHeroSlide2Title": "Hospitality Amenities",
   "@homeHeroSlide2Title": {
     "description": "Hero carousel slide 2 title."
   },
-
   "homeHeroSlide2Subtitle": "Trusted by leading venues",
   "@homeHeroSlide2Subtitle": {
     "description": "Hero carousel slide 2 subtitle."
   },
-
   "homeHeroSlide3Title": "Bespoke Packaging",
   "@homeHeroSlide3Title": {
     "description": "Hero carousel slide 3 title."
   },
-
   "homeHeroSlide3Subtitle": "Designed around your brand",
   "@homeHeroSlide3Subtitle": {
     "description": "Hero carousel slide 3 subtitle."
   },
-
   "homeSectionFeaturedCategories": "Featured Categories",
   "@homeSectionFeaturedCategories": {
     "description": "Home screen section title."
   },
-
   "homeSectionFeaturedProducts": "Featured Products",
   "@homeSectionFeaturedProducts": {
     "description": "Home screen section title."
   },
-
   "homeSectionNewArrivals": "New Arrivals",
   "@homeSectionNewArrivals": {
     "description": "Home screen section title."
   },
-
   "homeSectionBestSellers": "Best Sellers",
   "@homeSectionBestSellers": {
     "description": "Home screen section title."
   },
-
   "homeViewAll": "View All",
   "@homeViewAll": {
     "description": "Trailing action on a Home section header."
   },
-
   "homeSendInquiry": "Send Inquiry",
   "@homeSendInquiry": {
     "description": "Button label on a product card. UI-only in Phase 2B — no cart/backend yet."
   },
-
   "homeSendInquirySnackbar": "Added to your inquiry cart",
   "@homeSendInquirySnackbar": {
     "description": "Snackbar shown when tapping Send Inquiry — the product is added to the local Inquiry Cart (Phase 3)."
   },
-
   "homePromoTitle": "Sourcing for a Big Event?",
   "@homePromoTitle": {
     "description": "Promotional banner title."
   },
-
   "homePromoSubtitle": "Talk to our team about bulk and bespoke orders.",
   "@homePromoSubtitle": {
     "description": "Promotional banner subtitle."
   },
-
   "homePromoCta": "Get in Touch",
   "@homePromoCta": {
     "description": "Promotional banner call-to-action button label."
   },
-
   "homeWhyChooseTitle": "Why Choose Bariqon",
   "@homeWhyChooseTitle": {
     "description": "Value-proposition section title."
   },
-
   "homeWhyReason1Title": "Premium Quality",
   "@homeWhyReason1Title": {
     "description": "Value proposition 1 title."
   },
-
   "homeWhyReason1Desc": "Carefully sourced materials and finishes.",
   "@homeWhyReason1Desc": {
     "description": "Value proposition 1 description."
   },
-
   "homeWhyReason2Title": "Trusted Partner",
   "@homeWhyReason2Title": {
     "description": "Value proposition 2 title."
   },
-
   "homeWhyReason2Desc": "Relied on by hospitality and retail businesses.",
   "@homeWhyReason2Desc": {
     "description": "Value proposition 2 description."
   },
-
   "homeWhyReason3Title": "Bespoke Solutions",
   "@homeWhyReason3Title": {
     "description": "Value proposition 3 title."
   },
-
   "homeWhyReason3Desc": "Packaging and gifting tailored to your brand.",
   "@homeWhyReason3Desc": {
     "description": "Value proposition 3 description."
   },
-
   "homeWhyReason4Title": "Reliable Sourcing",
   "@homeWhyReason4Title": {
     "description": "Value proposition 4 title."
   },
-
   "homeWhyReason4Desc": "Consistent quality, delivered on time.",
   "@homeWhyReason4Desc": {
     "description": "Value proposition 4 description."
   },
-
   "homeFooterTagline": "A premium supplier of hospitality, gifting & packaging solutions.",
   "@homeFooterTagline": {
     "description": "Home screen footer tagline."
   },
-
   "homeFooterRights": "© 2026 Bariqon Trading. All rights reserved.",
   "@homeFooterRights": {
     "description": "Home screen footer copyright line."
   },
-
   "homeFooterLinkSnackbar": "Coming soon",
   "@homeFooterLinkSnackbar": {
     "description": "Snackbar shown when tapping a footer contact/social icon, none of which are wired up yet."
   },
-
   "categoryProductsHeading": "Products",
   "@categoryProductsHeading": {
     "description": "Section heading above the product grid on Category Detail."
   },
-
   "categorySearchHint": "Search in this category…",
   "@categorySearchHint": {
     "description": "Placeholder text in the Category Detail search field."
   },
-
   "categorySortLabel": "Sort by",
   "@categorySortLabel": {
     "description": "Label on the Category Detail sort dropdown."
   },
-
   "categorySortFeatured": "Featured",
   "@categorySortFeatured": {
     "description": "Sort option: default/original order."
   },
-
   "categorySortPriceLowHigh": "Price: Low to High",
   "@categorySortPriceLowHigh": {
     "description": "Sort option."
   },
-
   "categorySortPriceHighLow": "Price: High to Low",
   "@categorySortPriceHighLow": {
     "description": "Sort option."
   },
-
   "categorySortNameAZ": "Name (A–Z)",
   "@categorySortNameAZ": {
     "description": "Sort option."
   },
-
   "categoryFilterAll": "All",
   "@categoryFilterAll": {
     "description": "Filter chip: no price filter applied."
   },
-
   "categoryFilterUnder15": "Under BD15",
   "@categoryFilterUnder15": {
     "description": "Filter chip: price range."
   },
-
   "categoryFilter15to25": "BD15–25",
   "@categoryFilter15to25": {
     "description": "Filter chip: price range."
   },
-
   "categoryFilterOver25": "Over BD25",
   "@categoryFilterOver25": {
     "description": "Filter chip: price range."
   },
-
-  "categoryEmptyNoProductsTitle": "Nothing here yet",
-  "@categoryEmptyNoProductsTitle": {
-    "description": "Empty state title when a category genuinely has no mock products assigned."
-  },
-
   "categoryEmptyNoProductsMessage": "We don't have products listed in this category yet — check back soon, or explore another category.",
   "@categoryEmptyNoProductsMessage": {
     "description": "Empty state message when a category genuinely has no mock products assigned."
   },
-
   "categoryEmptyNoProductsCta": "Browse Other Categories",
   "@categoryEmptyNoProductsCta": {
     "description": "Empty state call-to-action when a category genuinely has no mock products assigned."
   },
-
-  "categoryEmptyFilteredTitle": "No matches",
-  "@categoryEmptyFilteredTitle": {
-    "description": "Empty state title when filters/search exclude every product in a non-empty category."
-  },
-
   "categoryEmptyFilteredMessage": "No products match your search or filters. Try clearing them.",
   "@categoryEmptyFilteredMessage": {
     "description": "Empty state message when filters/search exclude every product in a non-empty category."
   },
-
   "categoryEmptyFilteredCta": "Clear Filters",
   "@categoryEmptyFilteredCta": {
     "description": "Empty state call-to-action when filters/search exclude every product in a non-empty category."
   },
-
   "categoryNotFound": "Category not found.",
   "@categoryNotFound": {
     "description": "Defensive fallback if Category Detail is opened with an unknown id."
   },
-
   "productsTitle": "All Products",
   "@productsTitle": {
     "description": "Title of the Product Listing screen."
   },
-
   "productListingSearchHint": "Search all products…",
   "@productListingSearchHint": {
     "description": "Placeholder text in the Product Listing search field."
   },
-
   "filterCategoryLabel": "Category",
   "@filterCategoryLabel": {
     "description": "Label above the category filter chip row on Product Listing."
   },
-
   "filterPriceLabel": "Price",
   "@filterPriceLabel": {
     "description": "Label above the price filter chip row."
   },
-
   "productDetailFeaturesHeading": "Features",
   "@productDetailFeaturesHeading": {
     "description": "Section heading on Product Detail, above the product's feature list."
   },
-
-  "productDetailCategoryLabel": "Category",
-  "@productDetailCategoryLabel": {
-    "description": "Label preceding the tappable category chip on Product Detail."
-  },
-
   "productDetailRelatedHeading": "Related Products",
   "@productDetailRelatedHeading": {
     "description": "Section heading for the Related Products rail on Product Detail."
   },
-
   "productNotFoundTitle": "Product not found",
   "@productNotFoundTitle": {
     "description": "Error state title when Product Detail is opened with an unknown id."
   },
-
   "productNotFoundMessage": "We couldn't find that product. It may have been removed.",
   "@productNotFoundMessage": {
     "description": "Error state message when Product Detail is opened with an unknown id."
   },
-
   "inquiryCartTitle": "Inquiry Cart",
   "@inquiryCartTitle": {
     "description": "Inquiry Cart screen app bar title."
   },
-
   "inquiryCartClearAction": "Clear",
   "@inquiryCartClearAction": {
     "description": "App bar action to clear the whole cart."
   },
-
   "inquiryCartClearConfirmTitle": "Clear inquiry cart?",
   "@inquiryCartClearConfirmTitle": {
     "description": "Confirmation dialog title before clearing the cart."
   },
-
   "inquiryCartClearConfirmMessage": "This removes all items from your inquiry cart. This can't be undone.",
   "@inquiryCartClearConfirmMessage": {
     "description": "Confirmation dialog message before clearing the cart."
   },
-
   "inquiryCartEmptyMessage": "Your inquiry cart is empty.",
   "@inquiryCartEmptyMessage": {
     "description": "Empty state message on Inquiry Cart."
   },
-
   "inquiryCartEmptyCta": "Browse Products",
   "@inquiryCartEmptyCta": {
     "description": "Empty state call-to-action on Inquiry Cart."
   },
-
   "inquiryCartItemsLabel": "{count, plural, one{1 item selected} other{{count} items selected}}",
   "@inquiryCartItemsLabel": {
     "description": "Summary label showing how many cart items are selected.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "inquiryEstimatedTotalLabel": "Estimated Total",
   "@inquiryEstimatedTotalLabel": {
     "description": "Label above the estimated total price in the Inquiry Summary."
   },
-
   "inquiryProceedButton": "Proceed to Inquiry",
   "@inquiryProceedButton": {
     "description": "Button on Inquiry Cart leading to the Inquiry Details Form."
   },
-
   "inquiryRemoveItemTooltip": "Remove item",
   "@inquiryRemoveItemTooltip": {
     "description": "Tooltip on a cart item's remove button."
   },
-
   "quantityDecreaseTooltip": "Decrease quantity",
   "@quantityDecreaseTooltip": {
     "description": "Accessibility label for the quantity stepper's minus button."
   },
-
   "quantityIncreaseTooltip": "Increase quantity",
   "@quantityIncreaseTooltip": {
     "description": "Accessibility label for the quantity stepper's plus button."
   },
-
   "passwordShowTooltip": "Show password",
   "@passwordShowTooltip": {
     "description": "Accessibility label for the password field's visibility toggle when the password is currently hidden."
   },
-
   "passwordHideTooltip": "Hide password",
   "@passwordHideTooltip": {
     "description": "Accessibility label for the password field's visibility toggle when the password is currently visible."
   },
-
   "inquiryFormTitle": "Inquiry Details",
   "@inquiryFormTitle": {
     "description": "Inquiry Details Form screen app bar title."
   },
-
   "inquiryFormFullName": "Full Name",
   "@inquiryFormFullName": {
     "description": "Form field label."
   },
-
   "inquiryFormCompany": "Company Name",
   "@inquiryFormCompany": {
     "description": "Form field label."
   },
-
   "inquiryFormEmail": "Corporate Email",
   "@inquiryFormEmail": {
     "description": "Form field label."
   },
-
   "inquiryFormMobile": "Mobile Number",
   "@inquiryFormMobile": {
     "description": "Form field label."
   },
-
   "inquiryFormCountry": "Country",
   "@inquiryFormCountry": {
     "description": "Form field label."
   },
-
   "inquiryFormNotes": "Notes / Specifications",
   "@inquiryFormNotes": {
     "description": "Form field label."
   },
-
   "inquiryFormSubmit": "Submit Inquiry",
   "@inquiryFormSubmit": {
     "description": "Inquiry Details Form submit button — completes the local mock flow only, no backend call."
   },
-
   "validationRequired": "This field is required.",
   "@validationRequired": {
     "description": "Generic required-field validation message."
   },
-
   "validationEmail": "Enter a valid email address.",
   "@validationEmail": {
     "description": "Email format validation message."
   },
-
   "validationMobile": "Enter a valid mobile number.",
   "@validationMobile": {
     "description": "Mobile number validation message."
   },
-
   "inquiryConfirmationTitle": "Inquiry Sent",
   "@inquiryConfirmationTitle": {
     "description": "Inquiry Confirmation screen app bar title."
   },
-
   "inquiryConfirmationHeading": "Thank You!",
   "@inquiryConfirmationHeading": {
     "description": "Inquiry Confirmation success heading."
   },
-
   "inquiryConfirmationMessage": "Your inquiry has been received. Our team will get back to you shortly.",
   "@inquiryConfirmationMessage": {
     "description": "Inquiry Confirmation success message."
   },
-
   "inquiryConfirmationReferenceLabel": "Reference Number",
   "@inquiryConfirmationReferenceLabel": {
     "description": "Label above the mock reference number on Inquiry Confirmation."
   },
-
   "inquiryConfirmationContinueCta": "Continue Browsing",
   "@inquiryConfirmationContinueCta": {
     "description": "Inquiry Confirmation call-to-action back to Home."
   },
-
   "loginTitle": "Sign In",
   "@loginTitle": {
     "description": "Login screen app bar title."
   },
-
   "loginWelcomeMessage": "Sign in to manage your inquiries and profile.",
   "@loginWelcomeMessage": {
     "description": "Subtitle shown under the logo on the Login screen."
   },
-
   "authEmailLabel": "Email",
   "@authEmailLabel": {
     "description": "Email field label, shared by Login/Registration/Forgot Password/Edit Profile."
   },
-
   "authPasswordLabel": "Password",
   "@authPasswordLabel": {
     "description": "Password field label."
   },
-
   "authConfirmPasswordLabel": "Confirm Password",
   "@authConfirmPasswordLabel": {
     "description": "Confirm-password field label on Registration."
   },
-
   "authRememberMe": "Remember me",
   "@authRememberMe": {
     "description": "Remember Me checkbox label on Login."
   },
-
   "authForgotPassword": "Forgot Password?",
   "@authForgotPassword": {
     "description": "Link on Login to the Forgot Password screen."
   },
-
   "authSignInCta": "Sign In",
   "@authSignInCta": {
     "description": "Primary sign-in action, used on Login and as a prompt elsewhere (e.g. Profile)."
   },
-
   "authContinueAsGuest": "Continue as Guest",
   "@authContinueAsGuest": {
     "description": "Login screen action to browse without an account."
   },
-
   "authNoAccountPrompt": "Don't have an account?",
   "@authNoAccountPrompt": {
     "description": "Prompt on Login before the Register link."
   },
-
   "authHaveAccountPrompt": "Already have an account?",
   "@authHaveAccountPrompt": {
     "description": "Prompt on Registration before the Sign In link."
   },
-
   "authRegisterCta": "Register",
   "@authRegisterCta": {
     "description": "Registration action, used on Login's footer and as a prompt elsewhere (e.g. Profile)."
   },
-
   "authCreateAccountCta": "Create Account",
   "@authCreateAccountCta": {
     "description": "Registration screen's submit button."
   },
-
   "authRegisterCheckEmailMessage": "Almost there — we sent a confirmation link to {email}. Verify your email, then sign in.",
   "@authRegisterCheckEmailMessage": {
     "description": "Shown after Registration when Supabase requires email confirmation before a session exists.",
     "placeholders": {
-      "email": { "type": "String" }
+      "email": {
+        "type": "String"
+      }
     }
   },
-
   "validationPasswordMismatch": "Passwords do not match.",
   "@validationPasswordMismatch": {
     "description": "Confirm-password validation message on Registration."
   },
-
   "registerTitle": "Create Account",
   "@registerTitle": {
     "description": "Registration screen app bar title."
   },
-
   "forgotPasswordTitle": "Forgot Password",
   "@forgotPasswordTitle": {
     "description": "Forgot Password screen app bar title."
   },
-
   "forgotPasswordInstructions": "Enter the email address associated with your account and we'll send you a link to reset your password.",
   "@forgotPasswordInstructions": {
     "description": "Instructional copy above the email field on Forgot Password."
   },
-
   "forgotPasswordSubmit": "Send Reset Link",
   "@forgotPasswordSubmit": {
     "description": "Forgot Password submit button."
   },
-
   "forgotPasswordSuccessHeading": "Check Your Email",
   "@forgotPasswordSuccessHeading": {
     "description": "Heading shown after a mock password-reset request is sent."
   },
-
   "forgotPasswordSuccessMessage": "If an account exists for {email}, a password reset link has been sent.",
   "@forgotPasswordSuccessMessage": {
     "description": "Success message after a mock password-reset request, includes the submitted email.",
     "placeholders": {
-      "email": { "type": "String" }
+      "email": {
+        "type": "String"
+      }
     }
   },
-
   "forgotPasswordBackToSignIn": "Back to Sign In",
   "@forgotPasswordBackToSignIn": {
     "description": "Forgot Password success screen's action back to Login."
   },
-
   "settingsTitle": "Settings",
   "@settingsTitle": {
     "description": "Settings screen app bar title, and the tooltip/icon reaching it from Profile."
   },
-
   "settingsLanguageTitle": "Language",
   "@settingsLanguageTitle": {
     "description": "Settings row label."
   },
-
   "settingsLanguageEnglish": "English",
   "@settingsLanguageEnglish": {
     "description": "Current-language value shown in Settings' Language row."
   },
-
   "settingsLanguageArabic": "العربية",
   "@settingsLanguageArabic": {
     "description": "Current-language value shown in Settings' Language row."
   },
-
   "settingsThemeTitle": "Theme",
   "@settingsThemeTitle": {
     "description": "Settings row label, and the theme-picker dialog title."
   },
-
   "settingsThemeSystem": "System",
   "@settingsThemeSystem": {
     "description": "Theme option: follow the device setting."
   },
-
   "settingsThemeLight": "Light",
   "@settingsThemeLight": {
     "description": "Theme option."
   },
-
   "settingsThemeDark": "Dark",
   "@settingsThemeDark": {
     "description": "Theme option."
   },
-
   "settingsNotificationsTitle": "Notifications",
   "@settingsNotificationsTitle": {
     "description": "Settings row label, and Notification Preferences screen app bar title."
   },
-
   "settingsAboutTitle": "About Bariqon",
   "@settingsAboutTitle": {
     "description": "Settings row label, and About screen app bar title."
   },
-
   "settingsContactTitle": "Contact Us",
   "@settingsContactTitle": {
     "description": "Settings row label, and Contact screen app bar title."
   },
-
   "settingsPrivacyTitle": "Privacy Policy",
   "@settingsPrivacyTitle": {
     "description": "Settings row label, and Privacy Policy screen app bar title."
   },
-
   "settingsTermsTitle": "Terms & Conditions",
   "@settingsTermsTitle": {
     "description": "Settings row label, and Terms screen app bar title."
   },
-
   "aboutTagline": "Luxury Gifting, Hospitality & Packaging — Curated for You.",
   "@aboutTagline": {
     "description": "About screen tagline under the logo."
   },
-
   "aboutDescription": "Bariqon Trading is a Bahrain-based company specializing in luxury gift boxes, hospitality supplies, and custom packaging for businesses and individuals across the region. We partner with discerning clients to deliver premium presentation and dependable service on every order.",
   "@aboutDescription": {
     "description": "About screen body copy — placeholder company description pending final marketing copy."
   },
-
   "aboutVersionLabel": "Version {version}",
   "@aboutVersionLabel": {
     "description": "App version label at the bottom of the About screen.",
     "placeholders": {
-      "version": { "type": "String" }
+      "version": {
+        "type": "String"
+      }
     }
   },
-
   "contactEmailLabel": "Email",
   "@contactEmailLabel": {
     "description": "Contact screen row label."
   },
-
   "contactPhoneLabel": "Phone",
   "@contactPhoneLabel": {
     "description": "Contact screen row label."
   },
-
   "contactWhatsappLabel": "WhatsApp",
   "@contactWhatsappLabel": {
     "description": "Contact screen row label."
   },
-
   "contactAddressLabel": "Address",
   "@contactAddressLabel": {
     "description": "Contact screen row label."
   },
-
   "legalPrivacyPolicyBody": "This is a placeholder Privacy Policy for the Bariqon mobile app. It will be replaced with Bariqon Trading's final, legally reviewed privacy policy before this app is published, covering what data is collected, how it is used, and how customers can exercise their privacy rights.",
   "@legalPrivacyPolicyBody": {
     "description": "Placeholder Privacy Policy body text — not final legal copy."
   },
-
   "legalTermsBody": "This is a placeholder Terms & Conditions document for the Bariqon mobile app. It will be replaced with Bariqon Trading's final, legally reviewed terms before this app is published, covering use of the app, inquiries submitted through it, and related policies.",
   "@legalTermsBody": {
     "description": "Placeholder Terms & Conditions body text — not final legal copy."
   },
-
   "notificationOrderUpdatesTitle": "Order & Inquiry Updates",
   "@notificationOrderUpdatesTitle": {
     "description": "Notification Preferences toggle title."
   },
-
   "notificationOrderUpdatesSubtitle": "Status updates on inquiries you've submitted.",
   "@notificationOrderUpdatesSubtitle": {
     "description": "Notification Preferences toggle subtitle."
   },
-
   "notificationPromotionsTitle": "Promotions & Offers",
   "@notificationPromotionsTitle": {
     "description": "Notification Preferences toggle title."
   },
-
   "notificationPromotionsSubtitle": "Occasional deals and seasonal offers.",
   "@notificationPromotionsSubtitle": {
     "description": "Notification Preferences toggle subtitle."
   },
-
   "notificationNewArrivalsTitle": "New Arrivals",
   "@notificationNewArrivalsTitle": {
     "description": "Notification Preferences toggle title."
   },
-
   "notificationNewArrivalsSubtitle": "Be the first to know about new products.",
   "@notificationNewArrivalsSubtitle": {
     "description": "Notification Preferences toggle subtitle."
   },
-
   "profileSignedOutMessage": "Sign in to view your profile, saved details, and inquiry history.",
   "@profileSignedOutMessage": {
     "description": "Profile tab body message when the session is Signed Out."
   },
-
   "profileGuestMessage": "You're browsing as a guest. Sign in or create an account to save your profile.",
   "@profileGuestMessage": {
     "description": "Profile tab body message when the session is Guest."
   },
-
   "profileNotProvided": "Not provided",
   "@profileNotProvided": {
     "description": "Placeholder value for an empty profile field (e.g. mobile, country)."
   },
-
   "profileEditTitle": "Edit Profile",
   "@profileEditTitle": {
     "description": "Edit Profile screen app bar title."
   },
-
   "profileEditCta": "Edit Profile",
   "@profileEditCta": {
     "description": "Profile screen's action to Edit Profile."
   },
-
   "profileSaveCta": "Save Changes",
   "@profileSaveCta": {
     "description": "Edit Profile screen's submit button."
   },
-
   "profileSignOutAction": "Sign Out",
   "@profileSignOutAction": {
     "description": "Profile screen's sign-out action, and the confirm dialog's destructive button label."
   },
-
   "profileSignOutConfirmTitle": "Sign out?",
   "@profileSignOutConfirmTitle": {
     "description": "Confirmation dialog title before signing out."
   },
-
   "profileSignOutConfirmMessage": "You'll need to sign in again to view your profile.",
   "@profileSignOutConfirmMessage": {
     "description": "Confirmation dialog message before signing out."
