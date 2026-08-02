@@ -15,6 +15,7 @@ class ProductImage extends StatelessWidget {
     required this.placeholderColor,
     this.iconSize = 48,
     this.fit = BoxFit.cover,
+    this.memCacheWidth,
   });
 
   final String? imageUrl;
@@ -22,6 +23,13 @@ class ProductImage extends StatelessWidget {
   final Color placeholderColor;
   final double iconSize;
   final BoxFit fit;
+
+  /// Decodes the source image down to roughly this physical-pixel width
+  /// instead of its full resolution — a real performance/memory win for
+  /// small tiles (product cards) fed a source photo that may be much
+  /// larger than what's ever displayed. Left null (full resolution) for
+  /// callers that show the image at a large size, e.g. Product Detail.
+  final int? memCacheWidth;
 
   Widget _placeholder() => Container(
     decoration: BoxDecoration(
@@ -47,6 +55,7 @@ class ProductImage extends StatelessWidget {
       fit: fit,
       width: double.infinity,
       height: double.infinity,
+      memCacheWidth: memCacheWidth,
       fadeInDuration: const Duration(milliseconds: 200),
       placeholder: (context, _) => _placeholder(),
       errorWidget: (context, _, _) => _placeholder(),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
@@ -10,18 +11,23 @@ import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/inquiry_summary_card.dart';
 import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../auth/domain/entities/auth_session.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
 import 'controllers/inquiry_cart_controller.dart';
 import '../domain/entities/inquiry.dart';
 import '../domain/entities/inquiry_contact_details.dart';
 
-/// Inquiry Details Form, per the Phase 3 brief — Name/Company/Email/
-/// Mobile/Country/Notes, **validation only, no submission**: there's no
-/// backend to send to yet. "Submit" here means completing the local mock
-/// flow — build an [Inquiry] snapshot with a client-generated reference
-/// number, clear the cart, and hand off to the Confirmation screen. When
-/// real submission exists, only this method's body changes (an actual
-/// repository call replaces the local snapshot); the form/validation code
-/// around it doesn't.
+/// Inquiry Details Form — Name/Company/Email/Mobile/Country/Notes, then a
+/// real submission: builds an [Inquiry] snapshot (with a client-generated
+/// reference number for display/tracking, since the backend table has no
+/// reference column — see [SupabaseInquirySubmissionRepository]), sends
+/// it via [inquirySubmissionRepositoryProvider], clears the cart only on
+/// success, and hands off to the Confirmation screen.
+///
+/// A signed-in user's account email is used automatically (shown as
+/// "Logged in as: ..." instead of an input, with an explicit way to
+/// change it) rather than asked for again — see [_editingEmail]. A guest
+/// still gets the plain, always-editable email field.
 class InquiryDetailsFormScreen extends ConsumerStatefulWidget {
   const InquiryDetailsFormScreen({super.key});
 
@@ -39,6 +45,27 @@ class _InquiryDetailsFormScreenState
   final _mobileController = TextEditingController();
   final _countryController = TextEditingController();
   final _notesController = TextEditingController();
+  bool _isSubmitting = false;
+
+  /// True whenever the email field should be a normal editable input:
+  /// always for a guest, or once a signed-in user explicitly asks to
+  /// change the account email that's prefilled by default.
+  bool _editingEmail = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final session = ref.read(authControllerProvider);
+    if (session is SignedInSession) {
+      final user = session.user;
+      _editingEmail = false;
+      _emailController.text = user.email;
+      _nameController.text = user.fullName;
+      _companyController.text = user.company;
+      _mobileController.text = user.mobile;
+      _countryController.text = user.country;
+    }
+  }
 
   @override
   void dispose() {
@@ -62,7 +89,13 @@ class _InquiryDetailsFormScreenState
     return 'INQ-$datePart-$suffix';
   }
 
-  void _submit() {
+  String _messageFor(Object error, AppLocalizations l10n) {
+    if (error is Failure) return error.message;
+    return l10n.genericErrorMessage;
+  }
+
+  Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     final items = ref.read(inquiryCartProvider);
@@ -80,8 +113,20 @@ class _InquiryDetailsFormScreenState
       submittedAt: DateTime.now(),
     );
 
-    ref.read(inquiryCartProvider.notifier).clear();
-    context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(inquirySubmissionRepositoryProvider).submit(inquiry);
+      if (!mounted) return;
+      ref.read(inquiryCartProvider.notifier).clear();
+      context.pushReplacement('/inquiry/confirmation', extra: inquiry);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -90,6 +135,8 @@ class _InquiryDetailsFormScreenState
     final items = ref.watch(inquiryCartProvider);
     final itemCount = ref.watch(inquiryCartItemCountProvider);
     final subtotal = ref.watch(inquiryCartSubtotalProvider);
+    final session = ref.watch(authControllerProvider);
+    final showLoggedInEmail = session is SignedInSession && !_editingEmail;
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.inquiryFormTitle, showSearchAction: false),
@@ -131,14 +178,22 @@ class _InquiryDetailsFormScreenState
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        AppTextField(
-                          label: l10n.inquiryFormEmail,
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          validator: (v) =>
-                              Validators.email(v, message: l10n.validationEmail),
-                        ),
+                        if (showLoggedInEmail)
+                          _LoggedInEmailRow(
+                            label: l10n.authLoggedInAsLabel,
+                            email: _emailController.text,
+                            changeLabel: l10n.authChangeEmailAction,
+                            onChange: () => setState(() => _editingEmail = true),
+                          )
+                        else
+                          AppTextField(
+                            label: l10n.inquiryFormEmail,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: (v) =>
+                                Validators.email(v, message: l10n.validationEmail),
+                          ),
                         const SizedBox(height: AppSpacing.md),
                         AppTextField(
                           label: l10n.inquiryFormMobile,
@@ -168,14 +223,79 @@ class _InquiryDetailsFormScreenState
                           width: double.infinity,
                           height: 48,
                           child: FilledButton(
-                            onPressed: _submit,
-                            child: Text(l10n.inquiryFormSubmit),
+                            onPressed: _isSubmitting ? null : _submit,
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : Text(l10n.inquiryFormSubmit),
                           ),
                         ),
                       ],
                     ),
                   ),
               ),
+      ),
+    );
+  }
+}
+
+/// Read-only replacement for the email field when a signed-in user's
+/// account email is being used automatically — "Logged in as:
+/// user@email.com" plus a "Change" action that reveals the normal,
+/// editable field instead.
+class _LoggedInEmailRow extends StatelessWidget {
+  const _LoggedInEmailRow({
+    required this.label,
+    required this.email,
+    required this.changeLabel,
+    required this.onChange,
+  });
+
+  final String label;
+  final String email;
+  final String changeLabel;
+  final VoidCallback onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          TextButton(onPressed: onChange, child: Text(changeLabel)),
+        ],
       ),
     );
   }

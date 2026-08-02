@@ -72,21 +72,27 @@ class ProductResultsView extends ConsumerWidget {
       runSpacing: 12,
       children: [
         for (final product in products)
-          ProductCard(
-            title: product.name(locale),
-            description: product.description(locale),
-            price: product.price,
-            icon: product.icon,
-            placeholderColor: product.placeholderColor,
-            imageUrl: product.imageUrl,
-            sendInquiryLabel: sendInquiryLabel,
-            onTap: onProductTap == null ? null : () => onProductTap!(product),
-            onSendInquiry: () {
-              ref.read(inquiryCartProvider.notifier).addProduct(product);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(sendInquirySnackbarText)),
-              );
-            },
+          // Isolates each card's own repaints (e.g. its image fade-in)
+          // from its neighbors — without this, one card updating can
+          // force the whole Wrap's paint layer to redraw.
+          RepaintBoundary(
+            key: ValueKey(product.id),
+            child: ProductCard(
+              title: product.name(locale),
+              description: product.description(locale),
+              price: product.price,
+              icon: product.icon,
+              placeholderColor: product.placeholderColor,
+              imageUrl: product.imageUrl,
+              sendInquiryLabel: sendInquiryLabel,
+              onTap: onProductTap == null ? null : () => onProductTap!(product),
+              onSendInquiry: () {
+                ref.read(inquiryCartProvider.notifier).addProduct(product);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(sendInquirySnackbarText)),
+                );
+              },
+            ),
           ),
       ],
     );

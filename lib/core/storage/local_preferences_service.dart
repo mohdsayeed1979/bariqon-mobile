@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,12 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// in-memory defaults during tests instead of needing every test rewired.
 final sharedPreferencesProvider = Provider<SharedPreferences?>((ref) => null);
 
-/// Single access point for non-secret local preferences — currently just
-/// App Lock's enabled/method/timeout (the PIN itself never lives here,
-/// see [SecureStorageService]). Scoped to what App Lock actually needs;
-/// this app's theme/locale preferences are session-only `StateProvider`s
-/// (see app.dart/settings_controller.dart) and out of scope for this
-/// integration.
+/// Single access point for non-secret local preferences: App Lock's
+/// enabled/method/timeout (the PIN itself never lives here, see
+/// [SecureStorageService]), and the theme mode preference.
 class LocalPreferencesService {
   LocalPreferencesService(this._prefs);
 
@@ -25,6 +23,21 @@ class LocalPreferencesService {
   static const _appLockEnabledKey = 'app_lock_enabled';
   static const _appLockMethodKey = 'app_lock_method';
   static const _appLockTimeoutKey = 'app_lock_timeout';
+  static const _themeModeKey = 'theme_mode';
+
+  /// Null means nothing persisted yet — the caller falls back to
+  /// [ThemeMode.system], not this service's concern to decide that
+  /// default.
+  ThemeMode? getThemeMode() => switch (_prefs?.getString(_themeModeKey)) {
+    'light' => ThemeMode.light,
+    'dark' => ThemeMode.dark,
+    'system' => ThemeMode.system,
+    _ => null,
+  };
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    await _prefs?.setString(_themeModeKey, mode.name);
+  }
 
   bool getAppLockEnabled() => _prefs?.getBool(_appLockEnabledKey) ?? false;
 

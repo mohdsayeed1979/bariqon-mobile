@@ -7,12 +7,16 @@ import 'skeleton_box.dart';
 /// per the Phase 2C brief's loading-state requirement — built from the
 /// shared [SkeletonBox] shimmer primitive.
 class SkeletonCategoryGridCard extends StatelessWidget {
-  const SkeletonCategoryGridCard({super.key});
+  const SkeletonCategoryGridCard({super.key, this.width = 200});
+
+  /// Matches whatever width [CategoryGridCard] is being rendered at, so
+  /// the loading state doesn't visibly jump once real data arrives.
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 200,
+      width: width,
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: Column(

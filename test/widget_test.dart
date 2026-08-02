@@ -7,6 +7,8 @@
 
 import 'package:bariqon_app/app/app.dart';
 import 'package:bariqon_app/core/config/app_config.dart';
+import 'package:bariqon_app/core/storage/local_preferences_service.dart';
+import 'package:bariqon_app/core/widgets/quantity_stepper.dart';
 import 'package:bariqon_app/features/auth/data/mock_auth_repository.dart';
 import 'package:bariqon_app/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:bariqon_app/features/catalog/data/mock_catalog_data.dart';
@@ -21,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _FakeCategoryRepository implements CategoryRepository {
   @override
@@ -181,12 +184,24 @@ void main() {
       expect(find.text('Your inquiry cart is empty.'), findsNothing);
       // First Featured Products card, per mock_catalog_data.dart.
       expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
-      expect(find.text('1 item selected'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(QuantityStepper),
+          matching: find.text('1'),
+        ),
+        findsOneWidget,
+      );
 
       // Bump the quantity via the stepper.
       await tester.tap(find.byIcon(Icons.add_circle_outline).first);
       await tester.pumpAndSettle();
-      expect(find.text('2 items selected'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(QuantityStepper),
+          matching: find.text('2'),
+        ),
+        findsOneWidget,
+      );
 
       // Remove the item — back to the empty state.
       await tester.tap(find.byIcon(Icons.delete_outline).first);
@@ -227,7 +242,10 @@ void main() {
       await tester.tap(find.text('Inquiry'));
       await tester.pumpAndSettle();
 
-      final proceedButton = find.widgetWithText(FilledButton, 'Proceed to Inquiry');
+      final proceedButton = find.widgetWithText(
+        OutlinedButton,
+        'Submit Quote via Email',
+      );
       await tester.ensureVisible(proceedButton);
       await tester.pumpAndSettle();
       await tester.tap(proceedButton);
@@ -582,7 +600,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      final proceedButton = find.byType(FilledButton).last;
+      // The Cart's "Submit Quote via Email" action (an OutlinedButton,
+      // unlike the gold-filled WhatsApp action) leads to the form — see
+      // InquiryCartScreen.
+      final proceedButton = find.byType(OutlinedButton).last;
       await tester.ensureVisible(proceedButton);
       await tester.pumpAndSettle();
       await tester.tap(proceedButton);
@@ -707,6 +728,72 @@ void main() {
           'Sign in to view your profile, saved details, and inquiry history.',
         ),
         findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    "Inquiry Details Form uses a signed-in user's email automatically, "
+    'with an explicit way to change it',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+
+      await _scrollHome(tester, 500);
+      await tester.tap(find.text('Send Inquiry').first);
+      await tester.pump();
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Inquiry'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Submit Quote via Email'));
+      await tester.pumpAndSettle();
+      expect(find.text('Inquiry Details'), findsOneWidget);
+
+      // Signed-in email is used automatically — no editable email field,
+      // and the account email is shown read-only.
+      expect(find.text('Logged in as:'), findsOneWidget);
+      expect(find.text('jane@example.com'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Corporate Email'), findsNothing);
+      // Name/mobile/country were prefilled from the account too.
+      expect(find.widgetWithText(TextFormField, 'Full Name'), findsOneWidget);
+      expect(find.text('jane'), findsOneWidget);
+
+      // Tapping "Change" reveals the normal editable field, still
+      // prefilled with the account email.
+      await tester.tap(find.widgetWithText(TextButton, 'Change'));
+      await tester.pumpAndSettle();
+      expect(find.text('Logged in as:'), findsNothing);
+      final emailField = find.widgetWithText(TextFormField, 'Corporate Email');
+      expect(emailField, findsOneWidget);
+      expect(
+        tester.widget<TextFormField>(emailField).controller?.text,
+        'jane@example.com',
       );
     },
   );
@@ -862,6 +949,58 @@ void main() {
       await tester.tap(find.text('Language'));
       await tester.pumpAndSettle();
       expect(find.text('العربية'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'Theme preference persists across a simulated app restart '
+    '(regression guard for the Light-resets-to-Dark bug)',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      Future<void> pumpApp() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              ..._testOverrides(),
+              sharedPreferencesProvider.overrideWithValue(prefs),
+            ],
+            child: const BariqonApp(),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 1400));
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> openSettings() async {
+        await tester.tap(find.text('Profile'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+      }
+
+      await pumpApp();
+      await openSettings();
+
+      await tester.tap(find.text('Theme'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Light').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Light'), findsOneWidget);
+
+      // Simulate a real app restart: tear down the widget tree/provider
+      // container entirely, then rebuild from scratch against the same
+      // (now-persisted) SharedPreferences instance — reproduces exactly
+      // what the user reported: "Light Mode → Restart app → Theme
+      // automatically becomes Dark again." Fails if themeModeProvider
+      // ever regresses to being in-memory only.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await pumpApp();
+      await openSettings();
+
+      expect(find.text('Light'), findsOneWidget);
     },
   );
 

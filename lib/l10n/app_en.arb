@@ -439,6 +439,51 @@
     "description": "Tooltip on a cart item's remove button."
   },
 
+  "inquiryRemoveLabel": "Remove",
+  "@inquiryRemoveLabel": {
+    "description": "Visible text next to the remove icon on a cart item row."
+  },
+
+  "inquiryWhatsappButton": "Request Quote on WhatsApp",
+  "@inquiryWhatsappButton": {
+    "description": "Inquiry Cart button that opens WhatsApp with a pre-filled quote request, matching the website."
+  },
+
+  "inquiryEmailQuoteButton": "Submit Quote via Email",
+  "@inquiryEmailQuoteButton": {
+    "description": "Inquiry Cart button leading to the Inquiry Details Form, matching the website's wording."
+  },
+
+  "inquiryCartTotalUniqueItems": "Total Unique Items",
+  "@inquiryCartTotalUniqueItems": {
+    "description": "Label for the count of distinct products in the Inquiry Cart, matching the website."
+  },
+
+  "inquiryCartEstimatedTotalQty": "Estimated Total Qty",
+  "@inquiryCartEstimatedTotalQty": {
+    "description": "Label for the total quantity across all cart items, matching the website."
+  },
+
+  "inquiryCartContinueShoppingLink": "Continue Shopping",
+  "@inquiryCartContinueShoppingLink": {
+    "description": "Footer link on Inquiry Cart returning to the product catalog, matching the website."
+  },
+
+  "inquiryCartClearAllLink": "Clear All Items",
+  "@inquiryCartClearAllLink": {
+    "description": "Footer link on Inquiry Cart clearing the whole cart, matching the website."
+  },
+
+  "authLoggedInAsLabel": "Logged in as:",
+  "@authLoggedInAsLabel": {
+    "description": "Shown on the Inquiry Details Form when a signed-in user's email is used automatically."
+  },
+
+  "authChangeEmailAction": "Change",
+  "@authChangeEmailAction": {
+    "description": "Lets a signed-in user reveal an editable email field instead of their account email."
+  },
+
   "inquiryFormTitle": "Inquiry Details",
   "@inquiryFormTitle": {
     "description": "Inquiry Details Form screen app bar title."
@@ -843,6 +888,11 @@
   "settingsTermsTitle": "Terms & Conditions",
   "@settingsTermsTitle": {
     "description": "Settings row label, and Terms screen app bar title."
+  },
+
+  "settingsVersionLabel": "Version",
+  "@settingsVersionLabel": {
+    "description": "Settings row label for the app version/build number, read live from package_info_plus."
   },
 
   "aboutTagline": "Luxury Gifting, Hospitality & Packaging — Curated for You.",

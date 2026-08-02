@@ -37,9 +37,12 @@ class SettingsListTile extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 4),
+            if (onTap != null) const SizedBox(width: 4),
           ],
-          const Icon(Icons.chevron_right),
+          // Only a real navigation/action row gets the "you can tap this"
+          // chevron — an informational-only row (e.g. app version) with
+          // no onTap shouldn't imply it does something.
+          if (onTap != null) const Icon(Icons.chevron_right),
         ],
       ),
       onTap: onTap,

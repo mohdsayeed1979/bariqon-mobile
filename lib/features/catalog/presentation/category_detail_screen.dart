@@ -196,6 +196,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,
+                              width: 190,
                               onChanged: (value) =>
                                   setState(() => _sort = value ?? _sort),
                               entries: [

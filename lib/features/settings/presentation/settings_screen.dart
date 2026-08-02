@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app.dart';
+import '../../../core/config/app_version_provider.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/responsive_center.dart';
 import '../../../core/widgets/settings_list_tile.dart';
@@ -47,7 +48,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (selected != null) {
-      ref.read(themeModeProvider.notifier).state = selected;
+      await ref.read(themeModeProvider.notifier).setThemeMode(selected);
     }
   }
 
@@ -65,6 +66,7 @@ class SettingsScreen extends ConsumerWidget {
     final languageLabel = locale.languageCode == 'en'
         ? l10n.settingsLanguageEnglish
         : l10n.settingsLanguageArabic;
+    final packageInfo = ref.watch(packageInfoProvider);
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.settingsTitle, showSearchAction: false),
@@ -125,6 +127,18 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.description_outlined,
             label: l10n.settingsTermsTitle,
             onTap: () => context.push('/settings/terms'),
+          ),
+          const Divider(height: 1),
+          // Read live from package_info_plus (never hand-typed) — no
+          // onTap, this row is informational only.
+          SettingsListTile(
+            icon: Icons.info_outline,
+            label: l10n.settingsVersionLabel,
+            trailingText: packageInfo.when(
+              data: (info) => '${info.version} (${info.buildNumber})',
+              loading: () => '',
+              error: (_, _) => '',
+            ),
           ),
         ],
         ),

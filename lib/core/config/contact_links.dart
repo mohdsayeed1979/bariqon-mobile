@@ -13,6 +13,13 @@ class ContactLinks {
   static Uri whatsapp(SiteContactSettings settings) =>
       Uri.parse('https://wa.me/${settings.whatsappNumber}');
 
+  /// Same `wa.me` link as [whatsapp], with a pre-filled message — the
+  /// Inquiry Cart's "Request Quote on WhatsApp" action uses this to open
+  /// a chat with the cart contents already typed in.
+  static Uri whatsappWithMessage(SiteContactSettings settings, String message) =>
+      Uri.parse('https://wa.me/${settings.whatsappNumber}')
+          .replace(queryParameters: {'text': message});
+
   static Uri instagram(SiteContactSettings settings) =>
       Uri.parse(settings.instagramUrl);
 

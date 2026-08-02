@@ -11,12 +11,18 @@ class SortDropdown<T> extends StatelessWidget {
     required this.value,
     required this.entries,
     required this.onChanged,
+    this.width,
   });
 
   final String label;
   final T value;
   final List<DropdownMenuEntry<T>> entries;
   final ValueChanged<T?> onChanged;
+
+  /// Constrains the control's width instead of letting it size to the
+  /// widest entry label plus [DropdownMenu]'s default padding — left
+  /// null (auto) for callers that don't need a compact footprint.
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +31,8 @@ class SortDropdown<T> extends StatelessWidget {
       label: Text(label),
       dropdownMenuEntries: entries,
       onSelected: onChanged,
-      textStyle: Theme.of(context).textTheme.bodyMedium,
+      width: width,
+      textStyle: Theme.of(context).textTheme.bodySmall,
     );
   }
 }
