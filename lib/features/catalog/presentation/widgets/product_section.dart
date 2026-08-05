@@ -7,6 +7,8 @@ import '../../../../core/widgets/product_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../inquiry/presentation/controllers/inquiry_cart_controller.dart';
+import '../../../wishlist/presentation/controllers/wishlist_controller.dart';
+import '../../../wishlist/presentation/utils/wishlist_toggle.dart';
 import '../../domain/entities/product.dart';
 
 /// Generic horizontally-scrolling product rail — reused for Featured
@@ -33,6 +35,7 @@ class ProductSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context);
+    final wishlistedIds = ref.watch(wishlistControllerProvider).value ?? const {};
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,11 +65,16 @@ class ProductSection extends ConsumerWidget {
                         child: ProductCard(
                           title: product.name(locale),
                           description: product.description(locale),
-                          price: product.price,
+                          price: product.effectivePrice,
+                          originalPrice: product.hasActiveDiscount ? product.price : null,
+                          discountBadgePercent: product.discountBadgePercent,
+                          stockStatus: product.stockStatus,
                           icon: product.icon,
                           placeholderColor: product.placeholderColor,
                           imageUrl: product.imageUrl,
                           sendInquiryLabel: l10n.homeSendInquiry,
+                          isWishlisted: wishlistedIds.contains(product.id),
+                          onToggleWishlist: () => toggleWishlist(context, ref, product),
                           onTap: () => context.push('/product/${product.id}'),
                           onSendInquiry: () {
                             ref

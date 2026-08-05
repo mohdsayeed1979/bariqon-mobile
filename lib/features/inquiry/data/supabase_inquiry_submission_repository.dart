@@ -83,7 +83,18 @@ class SupabaseInquirySubmissionRepository implements InquirySubmissionRepository
       await http
           .post(
             Uri.parse(_inquiryNotificationUrl),
-            headers: const {'Content-Type': 'application/json'},
+            // Origin/Referer match exactly what a browser sends for the
+            // website's own same-origin `fetch("/api/inquiry")` call — a
+            // Dart HTTP client doesn't set these on its own. Their
+            // absence was distinguishing mobile-originated requests from
+            // browser ones server-side, and the confirmation email's
+            // template only renders correctly (real line breaks, not a
+            // literal "\n") on the branch a browser request takes.
+            headers: const {
+              'Content-Type': 'application/json',
+              'Origin': 'https://www.bariqon.bh',
+              'Referer': 'https://www.bariqon.bh/contact',
+            },
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 15));

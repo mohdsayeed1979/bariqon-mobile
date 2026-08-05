@@ -74,8 +74,9 @@ void main() {
   ) async {
     await _pumpPastSplash(tester);
 
-    expect(find.text('Home'), findsWidgets); // app bar title + tab label
-    expect(find.text('Welcome to Bariqon'), findsOneWidget);
+    expect(find.text('Home'), findsWidgets); // tab label
+    // Header greeting for a guest/signed-out session.
+    expect(find.text('Hello, Guest'), findsOneWidget);
 
     await _scrollHome(tester, 500);
     expect(find.text('Featured Products'), findsOneWidget);
@@ -91,6 +92,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Categories'), findsWidgets);
     expect(find.text('Luxury Gift Boxes'), findsOneWidget);
+
+    await tester.tap(find.text('Wishlist'));
+    await tester.pumpAndSettle();
+    expect(find.text('Wishlist'), findsWidgets);
+    // Guest/signed-out — a wishlist needs an account.
+    expect(find.text('Sign in to save products to your wishlist.'), findsOneWidget);
 
     await tester.tap(find.text('Inquiry'));
     await tester.pumpAndSettle();
@@ -404,9 +411,11 @@ void main() {
   ) async {
     await _pumpPastSplash(tester);
 
-    // find.byIcon(Icons.search) would also match the decorative icon in
-    // Home's own tappable search bar — target the app bar action
-    // specifically via its tooltip instead.
+    // Home's own header has no app bar (see HomeHeader) — Categories
+    // still uses the standard BrandedAppBar with a search action, so
+    // this exercises that shared app-bar affordance from there instead.
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Search'));
     await tester.pumpAndSettle();
 
@@ -419,7 +428,7 @@ void main() {
   ) async {
     await _pumpPastSplash(tester);
 
-    await tester.tap(find.text('Search products…').first);
+    await tester.tap(find.text('Search for gift boxes...').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Search'), findsWidgets);
@@ -434,7 +443,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الرئيسية'), findsWidgets);
-    expect(find.text('مرحبًا بكم في بريقون'), findsOneWidget);
+    // Header greeting for a guest/signed-out session, in Arabic.
+    expect(find.text('مرحباً، ضيف'), findsOneWidget);
   });
 
   // Regression guard for the RenderFlex overflow found in review: a narrow
@@ -679,8 +689,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
 
-      // Login navigates to Home on success.
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      // Login navigates to Home on success — header greets the signed-in
+      // user by name (MockAuthRepository derives it from the email
+      // prefix).
+      expect(find.text('Hello, jane'), findsOneWidget);
 
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
@@ -688,7 +700,7 @@ void main() {
       expect(find.text('jane'), findsOneWidget);
       expect(find.text('jane@example.com'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Edit Profile'));
+      await tester.tap(find.text('Edit Profile'));
       await tester.pumpAndSettle();
 
       // Mock login only populates name/email (Registration is what collects
@@ -713,7 +725,7 @@ void main() {
 
       expect(find.text('Jane Doe'), findsOneWidget);
 
-      final signOutButton = find.widgetWithText(OutlinedButton, 'Sign Out');
+      final signOutButton = find.text('Sign Out').first;
       await tester.ensureVisible(signOutButton);
       await tester.pumpAndSettle();
       await tester.tap(signOutButton);
@@ -759,7 +771,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, jane'), findsOneWidget);
 
       await _scrollHome(tester, 500);
       await tester.tap(find.text('Send Inquiry').first);
@@ -799,6 +811,157 @@ void main() {
   );
 
   testWidgets(
+    'A signed-in user can add a product to their Wishlist and see it there',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpPastSplash(tester);
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+
+      await _scrollHome(tester, 500);
+      // The first Featured Products card's wishlist heart — top-right
+      // corner of the card's image.
+      await tester.tap(find.byIcon(Icons.favorite_border).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Added to your wishlist'), findsOneWidget);
+
+      await tester.tap(find.text('Wishlist'));
+      await tester.pumpAndSettle();
+      expect(find.text('Woven Fabric Gift Box'), findsOneWidget);
+
+      // Toggling the same heart again (now filled) removes it.
+      await tester.tap(find.byIcon(Icons.favorite).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Your wishlist is empty.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'My Orders and Addresses are functional for a signed-in user, and the '
+    'duplicate Settings gear icon is gone',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // My Orders/Addresses are backed by real SharedPreferences-based
+      // local storage (there's no backend table for either) — a null
+      // prefs instance (the default in every other test) makes every
+      // read/write a no-op by design, so this needs a real mock
+      // instance, same as the theme-persistence test.
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._testOverrides(),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+          ],
+          child: const BariqonApp(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1400));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'jane@example.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'password123',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Profile'));
+      await tester.pumpAndSettle();
+      // The app bar's settings gear is only for Guest/Signed Out — a
+      // signed-in user already has the in-list "Settings" row.
+      expect(find.byTooltip('Settings'), findsNothing);
+
+      // My Orders — real local Inquiry History, empty until a real
+      // submission happens.
+      await tester.tap(find.text('My Orders'));
+      await tester.pumpAndSettle();
+      expect(find.text("You haven't submitted any inquiries yet."), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      // Addresses — real local CRUD.
+      await tester.tap(find.text('Addresses'));
+      await tester.pumpAndSettle();
+      expect(find.text("You haven't saved any addresses yet."), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Add Address'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Label (e.g. Home, Office)'),
+        'Home',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'),
+        'Jane Doe',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Mobile Number'),
+        '+973 3300 1122',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Address'),
+        '12 Seef Street',
+      );
+      await tester.enterText(find.widgetWithText(TextFormField, 'City'), 'Manama');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Country'),
+        'Bahrain',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Save Address'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Default'), findsOneWidget);
+      expect(find.textContaining('12 Seef Street'), findsOneWidget);
+
+      // Delete it — back to the empty state.
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(PopupMenuItem<String>, 'Delete').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+      expect(find.text("You haven't saved any addresses yet."), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'Continue as Guest works from Login, and Registration completes the '
     'mock flow',
     (tester) async {
@@ -819,7 +982,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Continue as Guest'));
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, Guest'), findsOneWidget);
 
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
@@ -863,7 +1026,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, John Smith'), findsOneWidget);
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
       expect(find.text('John Smith'), findsOneWidget);
@@ -908,30 +1071,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Settings'), findsWidgets);
 
-      await tester.tap(find.text('About Bariqon'));
-      await tester.pumpAndSettle();
-      expect(find.text('About Bariqon'), findsWidgets);
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Contact Us'));
-      await tester.pumpAndSettle();
-      expect(find.text('info@bariqon.bh'), findsOneWidget);
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Privacy Policy'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('placeholder Privacy Policy'), findsOneWidget);
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Terms & Conditions'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('placeholder Terms'), findsOneWidget);
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-
+      // About/Contact/Privacy/Terms now live only on Profile's signed-in
+      // list (previously duplicated here too) — covered by the
+      // "Auth, Profile, and Settings screens" overflow test instead.
       await tester.tap(find.text('Notifications'));
       await tester.pumpAndSettle();
       expect(find.text('Order & Inquiry Updates'), findsOneWidget);
@@ -1099,7 +1241,7 @@ void main() {
       expect(tester.takeException(), isNull);
 
       // Edit Profile screen, EN then AR.
-      await tester.tap(find.widgetWithText(FilledButton, 'Edit Profile'));
+      await tester.tap(find.text('Edit Profile'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.tap(find.byIcon(Icons.language));
@@ -1112,23 +1254,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // Settings + its five sub-screens, EN then AR each.
-      await tester.tap(find.byIcon(Icons.settings_outlined));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      await tester.tap(find.byIcon(Icons.language));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      await tester.tap(find.byIcon(Icons.language));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-
+      // About/Contact/Privacy/Terms — now reached directly from
+      // Profile's own signed-in list (no longer duplicated on Settings).
       for (final label in [
         'About Bariqon',
         'Contact Us',
         'Privacy Policy',
         'Terms & Conditions',
-        'Notifications',
       ]) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
@@ -1143,6 +1275,32 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       }
+
+      // Settings (via the in-list "Settings" row — the app bar action is
+      // hidden once signed in, since this row already covers it) + its
+      // Notifications sub-screen, EN then AR.
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Notifications'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byIcon(Icons.language));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     },
   );
 }

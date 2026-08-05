@@ -26,6 +26,11 @@ class Product {
     this.featured = false,
     this.displayOrder = 0,
     this.createdAt,
+    this.discountEnabled = false,
+    this.discountPercentage,
+    this.discountPrice,
+    this.discountStartDate,
+    this.discountEndDate,
   });
 
   final String id;
@@ -60,6 +65,43 @@ class Product {
 
   final IconData icon;
   final Color placeholderColor;
+
+  /// Whether a discount is currently on for this product — the CMS flag
+  /// plus, when set, a start/end window. Absent columns (schema not
+  /// migrated yet) map to `false`/`null` via [SupabaseProductRepository],
+  /// so this is safe to check unconditionally before that migration runs.
+  final bool discountEnabled;
+  final double? discountPercentage;
+  final double? discountPrice;
+  final DateTime? discountStartDate;
+  final DateTime? discountEndDate;
+
+  /// True only when [discountEnabled] is on, a [discountPrice] exists,
+  /// and (if set) the current time falls within the discount window.
+  bool get hasActiveDiscount {
+    if (!discountEnabled || discountPrice == null) return false;
+    final now = DateTime.now();
+    final start = discountStartDate;
+    final end = discountEndDate;
+    if (start != null && now.isBefore(start)) return false;
+    if (end != null && now.isAfter(end)) return false;
+    return true;
+  }
+
+  /// [discountPrice] while a discount is active, [price] otherwise — the
+  /// one price every screen should actually display/inquire about.
+  double get effectivePrice => hasActiveDiscount ? discountPrice! : price;
+
+  /// Whole-percent badge value (e.g. `20` for "-20%") — uses the CMS's
+  /// own [discountPercentage] when set, otherwise derives it from
+  /// [price] vs [discountPrice] so the badge is never wrong even if only
+  /// one of the two was filled in. `null` when no discount is active.
+  int? get discountBadgePercent {
+    if (!hasActiveDiscount) return null;
+    if (discountPercentage != null) return discountPercentage!.round();
+    if (price <= 0) return null;
+    return (((price - discountPrice!) / price) * 100).round();
+  }
 
   String name(Locale locale) => locale.languageCode == 'ar' ? nameAr : nameEn;
 
