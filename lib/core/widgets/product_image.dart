@@ -15,6 +15,7 @@ class ProductImage extends StatelessWidget {
     required this.placeholderColor,
     this.iconSize = 48,
     this.fit = BoxFit.cover,
+    this.memCacheWidth,
   });
 
   final String? imageUrl;
@@ -22,6 +23,13 @@ class ProductImage extends StatelessWidget {
   final Color placeholderColor;
   final double iconSize;
   final BoxFit fit;
+
+  /// Decodes the source image down to roughly this physical-pixel width
+  /// instead of its full resolution — a real performance/memory win for
+  /// small tiles (product cards) fed a source photo that may be much
+  /// larger than what's ever displayed. Left null (full resolution) for
+  /// callers that show the image at a large size, e.g. Product Detail.
+  final int? memCacheWidth;
 
   Widget _placeholder() => Container(
     decoration: BoxDecoration(
@@ -42,13 +50,25 @@ class ProductImage extends StatelessWidget {
     final url = imageUrl;
     if (url == null || url.isEmpty) return _placeholder();
 
-    // Decodes (and caches) the bitmap at the size it's actually displayed
-    // at, not the source photo's full resolution — Supabase Storage
-    // product photos can be well over 1000px on a side, which uncapped
-    // would eat several MB of decoded memory *per card* in a 200+ product
-    // grid. LayoutBuilder gives the real render size for whatever context
-    // this is used in (card thumbnail, product gallery, ...) so this
-    // adapts automatically instead of needing per-call-site tuning.
+    // An explicit memCacheWidth from the caller is honored as-is (e.g. a
+    // fixed thumbnail size). Callers that don't specify one get a size
+    // computed from the actual render constraints instead of the source
+    // photo's full resolution — Supabase Storage product photos can be
+    // well over 1000px on a side, which uncapped would eat several MB of
+    // decoded memory *per card* in a 200+ product grid.
+    if (memCacheWidth != null) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        fit: fit,
+        width: double.infinity,
+        height: double.infinity,
+        memCacheWidth: memCacheWidth,
+        fadeInDuration: const Duration(milliseconds: 200),
+        placeholder: (context, _) => _placeholder(),
+        errorWidget: (context, _, _) => _placeholder(),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final dpr = MediaQuery.devicePixelRatioOf(context);

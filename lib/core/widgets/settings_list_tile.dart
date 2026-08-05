@@ -37,13 +37,19 @@ class SettingsListTile extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 4),
+            if (onTap != null) const SizedBox(width: 4),
           ],
-          Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.chevron_left
-                : Icons.chevron_right,
-          ),
+          // Only a real navigation/action row gets the "you can tap this"
+          // chevron — an informational-only row (e.g. app version) with
+          // no onTap shouldn't imply it does something. When shown, it
+          // points the way the row's disclosure actually reads for the
+          // current text direction.
+          if (onTap != null)
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
+            ),
         ],
       ),
       onTap: onTap,

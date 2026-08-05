@@ -1,42 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/storage/local_preferences_service.dart';
 import '../../domain/notification_preferences.dart';
 
-const _themeModePrefsKey = 'theme_mode';
-
-/// Reads the persisted theme preference (if any) before the app first
-/// renders. Called once during `bootstrap()`, before `runApp`, so the
-/// correct theme is what actually paints the first frame rather than
-/// flashing system default then switching.
-Future<ThemeMode> loadPersistedThemeMode() async {
-  final prefs = await SharedPreferences.getInstance();
-  final stored = prefs.getString(_themeModePrefsKey);
-  return ThemeMode.values.firstWhere(
-    (mode) => mode.name == stored,
-    orElse: () => ThemeMode.system,
-  );
-}
-
-/// App-wide theme preference, per the Phase 4 brief's "Theme" settings
-/// row — persisted to disk via [SharedPreferences] so it survives app
-/// restarts, unlike the still-local-only Notifications/About rows.
-/// [build]'s initial value comes from [loadPersistedThemeMode] via the
-/// `ProviderScope` override installed in `bootstrap()`; this class itself
-/// only needs to persist on every subsequent change.
+/// App-wide theme preference, persisted via [LocalPreferencesService] so
+/// a choice survives an app restart — previously a plain in-memory
+/// `StateProvider` that silently reset to [ThemeMode.system] (which
+/// resolves to Dark on a device with system dark mode on) every cold
+/// start regardless of what the user picked. [build] reads whatever was
+/// last saved (falling back to `system` if nothing was ever saved), and
+/// [setThemeMode] both updates state and persists the change.
 class ThemeModeController extends Notifier<ThemeMode> {
-  ThemeModeController([this._initial = ThemeMode.system]);
-
-  final ThemeMode _initial;
+  LocalPreferencesService get _prefs => ref.read(localPreferencesServiceProvider);
 
   @override
-  ThemeMode build() => _initial;
+  ThemeMode build() => _prefs.getThemeMode() ?? ThemeMode.system;
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeModePrefsKey, mode.name);
+    await _prefs.setThemeMode(mode);
   }
 }
 

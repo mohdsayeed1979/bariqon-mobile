@@ -134,23 +134,30 @@ class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
             runSpacing: 12,
             children: [
               for (final product in visibleProducts)
-                ProductCard(
-                  title: product.name(widget.locale),
-                  description: product.description(widget.locale),
-                  price: product.price,
-                  icon: product.icon,
-                  placeholderColor: product.placeholderColor,
-                  imageUrl: product.imageUrl,
-                  sendInquiryLabel: widget.sendInquiryLabel,
-                  onTap: widget.onProductTap == null
-                      ? null
-                      : () => widget.onProductTap!(product),
-                  onSendInquiry: () {
-                    ref.read(inquiryCartProvider.notifier).addProduct(product);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(widget.sendInquirySnackbarText)),
-                    );
-                  },
+                // Isolates each card's own repaints (e.g. its image
+                // fade-in) from its neighbors — without this, one card
+                // updating can force the whole Wrap's paint layer to
+                // redraw.
+                RepaintBoundary(
+                  key: ValueKey(product.id),
+                  child: ProductCard(
+                    title: product.name(widget.locale),
+                    description: product.description(widget.locale),
+                    price: product.price,
+                    icon: product.icon,
+                    placeholderColor: product.placeholderColor,
+                    imageUrl: product.imageUrl,
+                    sendInquiryLabel: widget.sendInquiryLabel,
+                    onTap: widget.onProductTap == null
+                        ? null
+                        : () => widget.onProductTap!(product),
+                    onSendInquiry: () {
+                      ref.read(inquiryCartProvider.notifier).addProduct(product);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(widget.sendInquirySnackbarText)),
+                      );
+                    },
+                  ),
                 ),
             ],
           ),

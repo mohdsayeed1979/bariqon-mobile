@@ -55,25 +55,30 @@ class ProductSection extends ConsumerWidget {
                   Builder(
                     builder: (context) {
                       final product = products[i];
-                      return ProductCard(
-                        title: product.name(locale),
-                        description: product.description(locale),
-                        price: product.price,
-                        icon: product.icon,
-                        placeholderColor: product.placeholderColor,
-                        imageUrl: product.imageUrl,
-                        sendInquiryLabel: l10n.homeSendInquiry,
-                        onTap: () => context.push('/product/${product.id}'),
-                        onSendInquiry: () {
-                          ref
-                              .read(inquiryCartProvider.notifier)
-                              .addProduct(product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.homeSendInquirySnackbar),
-                            ),
-                          );
-                        },
+                      // See ProductResultsView for why each card gets its
+                      // own RepaintBoundary.
+                      return RepaintBoundary(
+                        key: ValueKey(product.id),
+                        child: ProductCard(
+                          title: product.name(locale),
+                          description: product.description(locale),
+                          price: product.price,
+                          icon: product.icon,
+                          placeholderColor: product.placeholderColor,
+                          imageUrl: product.imageUrl,
+                          sendInquiryLabel: l10n.homeSendInquiry,
+                          onTap: () => context.push('/product/${product.id}'),
+                          onSendInquiry: () {
+                            ref
+                                .read(inquiryCartProvider.notifier)
+                                .addProduct(product);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(l10n.homeSendInquirySnackbar),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),

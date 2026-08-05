@@ -10,39 +10,52 @@ import 'skeleton_box.dart';
 class SkeletonProductCard extends StatelessWidget {
   const SkeletonProductCard({super.key});
 
+  // Matches ProductCard's dimensions exactly (see its `_width`/
+  // `_imageAspectRatio`) so the loading → loaded transition doesn't jump.
+  static const double _width = 156;
+  static const double _imageAspectRatio = 1.4;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 228,
+      width: _width,
       child: Card(
         clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SkeletonBox(width: double.infinity, height: 198, borderRadius: 0),
+            AspectRatio(
+              aspectRatio: _imageAspectRatio,
+              child: const SkeletonBox(
+                width: double.infinity,
+                height: double.infinity,
+                borderRadius: 0,
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
                 AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.sm,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SkeletonBox(width: 140, height: 18),
-                  const SizedBox(height: 8),
-                  const SkeletonBox(width: double.infinity, height: 12),
-                  const SizedBox(height: 6),
-                  const SkeletonBox(width: 120, height: 12),
+                  const SkeletonBox(width: 100, height: 14),
+                  const SizedBox(height: 4),
+                  const SkeletonBox(width: double.infinity, height: 10),
+                  const SizedBox(height: 4),
+                  const SkeletonBox(width: 80, height: 10),
+                  const SizedBox(height: AppSpacing.xs),
+                  const SkeletonBox(width: 50, height: 14),
                   const SizedBox(height: AppSpacing.sm),
-                  const SkeletonBox(width: 60, height: 18),
-                  const SizedBox(height: AppSpacing.md),
                   SkeletonBox(
                     width: double.infinity,
-                    height: 42,
+                    height: 34,
                     borderRadius: AppRadius.md,
                   ),
                 ],

@@ -194,10 +194,11 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                             horizontal: AppSpacing.lg,
                           ),
                           child: Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,
+                              width: 190,
                               onChanged: (value) =>
                                   setState(() => _sort = value ?? _sort),
                               entries: [
@@ -373,7 +374,7 @@ class _CategoryBanner extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: Alignment.bottomLeft,
+                alignment: AlignmentDirectional.bottomStart,
                 child: Text(
                   category.name(locale),
                   maxLines: 2,

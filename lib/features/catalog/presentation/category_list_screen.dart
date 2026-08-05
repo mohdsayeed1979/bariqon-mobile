@@ -47,6 +47,31 @@ class CategoryListScreen extends ConsumerWidget {
   }
 }
 
+/// How many columns the grid should use for a given available width, and
+/// each card's resulting width — computed live rather than fixed, so a
+/// catalog with only 1–2 categories fills the row instead of rendering a
+/// single narrow card stranded in a sea of empty gutter (the bug this was
+/// written to fix), while still looking right with a full catalog.
+class _GridMetrics {
+  const _GridMetrics(this.columns, this.cardWidth);
+
+  final int columns;
+  final double cardWidth;
+
+  factory _GridMetrics.of(double availableWidth) {
+    final columns = availableWidth < 340
+        ? 1
+        : availableWidth < 560
+        ? 2
+        : availableWidth < 800
+        ? 3
+        : 4;
+    final cardWidth =
+        (availableWidth - (columns - 1) * AppSpacing.md) / columns;
+    return _GridMetrics(columns, cardWidth);
+  }
+}
+
 class _CategoryGrid extends StatelessWidget {
   const _CategoryGrid({super.key, required this.categories});
 
@@ -58,19 +83,25 @@ class _CategoryGrid extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: AppSpacing.md,
-        runSpacing: AppSpacing.md,
-        children: [
-          for (final category in categories)
-            CategoryGridCard(
-              title: category.name(locale),
-              description: category.description(locale),
-              icon: category.icon,
-              onTap: () => context.push('/category/${category.id}'),
-            ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final metrics = _GridMetrics.of(constraints.maxWidth);
+          return Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: [
+              for (final category in categories)
+                CategoryGridCard(
+                  width: metrics.cardWidth,
+                  title: category.name(locale),
+                  description: category.description(locale),
+                  icon: category.icon,
+                  onTap: () => context.push('/category/${category.id}'),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -84,17 +115,19 @@ class _CategoryGridSkeleton extends StatelessWidget {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: AppSpacing.md,
-        runSpacing: AppSpacing.md,
-        children: const [
-          SkeletonCategoryGridCard(),
-          SkeletonCategoryGridCard(),
-          SkeletonCategoryGridCard(),
-          SkeletonCategoryGridCard(),
-          SkeletonCategoryGridCard(),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final metrics = _GridMetrics.of(constraints.maxWidth);
+          return Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: [
+              for (var i = 0; i < 5; i++)
+                SkeletonCategoryGridCard(width: metrics.cardWidth),
+            ],
+          );
+        },
       ),
     );
   }

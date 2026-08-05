@@ -20,9 +20,15 @@ class CategoryGridCard extends StatefulWidget {
     required this.icon,
     this.description,
     this.onTap,
+    this.width = 200,
   });
 
   final String title;
+
+  /// Card width — the caller computes this responsively (see
+  /// `CategoryListScreen`) so a handful of categories fill the available
+  /// row width instead of leaving large empty gutters at a fixed size.
+  final double width;
 
   /// Null/empty when the backend has no description for this category —
   /// the description row is omitted entirely rather than showing
@@ -92,7 +98,7 @@ class _CategoryGridCardState extends State<CategoryGridCard> {
     );
 
     return SizedBox(
-      width: 200,
+      width: widget.width,
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovering = true),
         onExit: (_) => setState(() => _hovering = false),

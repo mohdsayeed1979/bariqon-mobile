@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/error/user_facing_message.dart';
-import '../../../core/network/supabase_service.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/branded_app_bar.dart';
@@ -12,26 +11,23 @@ import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/inquiry_summary_card.dart';
 import '../../../core/widgets/responsive_center.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../catalog/presentation/controllers/catalog_providers.dart';
-import '../../catalog/presentation/utils/catalog_selectors.dart';
-import '../data/supabase_inquiry_repository.dart';
+import '../../auth/domain/entities/auth_session.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
+import 'controllers/inquiry_cart_controller.dart';
 import '../domain/entities/inquiry.dart';
 import '../domain/entities/inquiry_contact_details.dart';
-import '../domain/entities/inquiry_item.dart';
-import '../domain/inquiry_repository.dart';
-import 'controllers/inquiry_cart_controller.dart';
 
-/// The single place the inquiry-submission repository is chosen, mirroring
-/// [inquiryCartRepositoryProvider] and the Catalog/Auth provider pattern.
-final inquiryRepositoryProvider = Provider<InquiryRepository>((ref) {
-  return SupabaseInquiryRepository(ref.watch(supabaseClientProvider));
-});
-
-/// Inquiry Details Form, per the Phase 3 brief — Name/Company/Email/
-/// Mobile/Country/Notes. Submitting sends the form + cart snapshot to
-/// `cms_contact_messages` via [InquiryRepository]; only on success does it
-/// clear the cart and hand off to the Confirmation screen — a failed
-/// submission leaves the cart and form intact so the user can retry.
+/// Inquiry Details Form — Name/Company/Email/Mobile/Country/Notes, then a
+/// real submission: builds an [Inquiry] snapshot (with a client-generated
+/// reference number for display/tracking, since the backend table has no
+/// reference column — see [SupabaseInquirySubmissionRepository]), sends
+/// it via [inquirySubmissionRepositoryProvider], clears the cart only on
+/// success, and hands off to the Confirmation screen.
+///
+/// A signed-in user's account email is used automatically (shown as
+/// "Logged in as: ..." instead of an input, with an explicit way to
+/// change it) rather than asked for again — see [_editingEmail]. A guest
+/// still gets the plain, always-editable email field.
 class InquiryDetailsFormScreen extends ConsumerStatefulWidget {
   const InquiryDetailsFormScreen({super.key});
 
@@ -51,6 +47,26 @@ class _InquiryDetailsFormScreenState
   final _notesController = TextEditingController();
   bool _isSubmitting = false;
 
+  /// True whenever the email field should be a normal editable input:
+  /// always for a guest, or once a signed-in user explicitly asks to
+  /// change the account email that's prefilled by default.
+  bool _editingEmail = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final session = ref.read(authControllerProvider);
+    if (session is SignedInSession) {
+      final user = session.user;
+      _editingEmail = false;
+      _emailController.text = user.email;
+      _nameController.text = user.fullName;
+      _companyController.text = user.company;
+      _mobileController.text = user.mobile;
+      _countryController.text = user.country;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -62,7 +78,7 @@ class _InquiryDetailsFormScreenState
     super.dispose();
   }
 
-  String _generateReferenceNumber() {
+  String _generateMockReference() {
     final now = DateTime.now();
     final datePart =
         '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
@@ -73,29 +89,18 @@ class _InquiryDetailsFormScreenState
     return 'INQ-$datePart-$suffix';
   }
 
-  /// `cms_contact_messages` has one free-text `sector` column per
-  /// submission, not a per-item field, so every distinct category among
-  /// the cart's items is resolved to its display name and joined — falling
-  /// back to the raw category id for the (should-be-rare) case where
-  /// [categoriesProvider] hasn't loaded a match, so a submission never
-  /// blocks on that lookup.
-  String _resolveSector(List<InquiryItem> items) {
-    final categories = ref.read(categoriesProvider).value ?? const [];
-    final names = <String>{};
-    for (final item in items) {
-      final category = categoryById(categories, item.product.categoryId);
-      names.add(category?.nameEn ?? item.product.categoryId);
-    }
-    return names.join(', ');
+  String _messageFor(Object error, AppLocalizations l10n) {
+    if (error is Failure) return error.message;
+    return l10n.genericErrorMessage;
   }
 
   Future<void> _submit() async {
-    if (_isSubmitting) return;
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
 
     final items = ref.read(inquiryCartProvider);
     final inquiry = Inquiry(
-      referenceNumber: _generateReferenceNumber(),
+      referenceNumber: _generateMockReference(),
       items: items,
       contact: InquiryContactDetails(
         fullName: _nameController.text.trim(),
@@ -110,17 +115,15 @@ class _InquiryDetailsFormScreenState
 
     setState(() => _isSubmitting = true);
     try {
-      await ref
-          .read(inquiryRepositoryProvider)
-          .submit(inquiry, sector: _resolveSector(items));
+      await ref.read(inquirySubmissionRepositoryProvider).submit(inquiry);
       if (!mounted) return;
       ref.read(inquiryCartProvider.notifier).clear();
       context.pushReplacement('/inquiry/confirmation', extra: inquiry);
-    } catch (e) {
+    } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingErrorMessage(context, e))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_messageFor(error, l10n))));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -132,6 +135,8 @@ class _InquiryDetailsFormScreenState
     final items = ref.watch(inquiryCartProvider);
     final itemCount = ref.watch(inquiryCartItemCountProvider);
     final subtotal = ref.watch(inquiryCartSubtotalProvider);
+    final session = ref.watch(authControllerProvider);
+    final showLoggedInEmail = session is SignedInSession && !_editingEmail;
 
     return Scaffold(
       appBar: BrandedAppBar(title: l10n.inquiryFormTitle, showSearchAction: false),
@@ -173,14 +178,22 @@ class _InquiryDetailsFormScreenState
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: AppSpacing.md),
-                        AppTextField(
-                          label: l10n.inquiryFormEmail,
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          validator: (v) =>
-                              Validators.email(v, message: l10n.validationEmail),
-                        ),
+                        if (showLoggedInEmail)
+                          _LoggedInEmailRow(
+                            label: l10n.authLoggedInAsLabel,
+                            email: _emailController.text,
+                            changeLabel: l10n.authChangeEmailAction,
+                            onChange: () => setState(() => _editingEmail = true),
+                          )
+                        else
+                          AppTextField(
+                            label: l10n.inquiryFormEmail,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: (v) =>
+                                Validators.email(v, message: l10n.validationEmail),
+                          ),
                         const SizedBox(height: AppSpacing.md),
                         AppTextField(
                           label: l10n.inquiryFormMobile,
@@ -204,8 +217,6 @@ class _InquiryDetailsFormScreenState
                           controller: _notesController,
                           maxLines: 4,
                           textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) =>
-                              _isSubmitting ? null : _submit(),
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         SizedBox(
@@ -217,9 +228,7 @@ class _InquiryDetailsFormScreenState
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                                    child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : Text(l10n.inquiryFormSubmit),
                           ),
@@ -228,6 +237,65 @@ class _InquiryDetailsFormScreenState
                     ),
                   ),
               ),
+      ),
+    );
+  }
+}
+
+/// Read-only replacement for the email field when a signed-in user's
+/// account email is being used automatically — "Logged in as:
+/// user@email.com" plus a "Change" action that reveals the normal,
+/// editable field instead.
+class _LoggedInEmailRow extends StatelessWidget {
+  const _LoggedInEmailRow({
+    required this.label,
+    required this.email,
+    required this.changeLabel,
+    required this.onChange,
+  });
+
+  final String label;
+  final String email;
+  final String changeLabel;
+  final VoidCallback onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          TextButton(onPressed: onChange, child: Text(changeLabel)),
+        ],
       ),
     );
   }

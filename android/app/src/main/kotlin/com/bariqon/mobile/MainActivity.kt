@@ -1,5 +1,7 @@
 package com.bariqon.mobile
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity (not FlutterActivity) — required by local_auth's
+// biometric prompt (App Lock), which needs a FragmentActivity host.
+class MainActivity : FlutterFragmentActivity()

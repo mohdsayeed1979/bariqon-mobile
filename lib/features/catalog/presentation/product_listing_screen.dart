@@ -120,7 +120,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                           ),
                           child: Text(
                             l10n.filterCategoryLabel,
-                            style: Theme.of(context).textTheme.labelLarge,
+                            style: Theme.of(context).textTheme.labelMedium,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -133,14 +133,14 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                           onSelected: (i) =>
                               setState(() => _categoryChipIndex = i),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
                           ),
                           child: Text(
                             l10n.filterPriceLabel,
-                            style: Theme.of(context).textTheme.labelLarge,
+                            style: Theme.of(context).textTheme.labelMedium,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -155,16 +155,17 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                           onSelected: (i) =>
                               setState(() => _priceFilterIndex = i),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
                           ),
                           child: Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: SortDropdown<ProductSortOption>(
                               label: l10n.categorySortLabel,
                               value: _sort,
+                              width: 190,
                               onChanged: (value) =>
                                   setState(() => _sort = value ?? _sort),
                               entries: [
@@ -188,7 +189,7 @@ class _ProductListingScreenState extends ConsumerState<ProductListingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.sm),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
