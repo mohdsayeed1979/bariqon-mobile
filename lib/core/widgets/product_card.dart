@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_sizes.dart';
+import '../theme/app_colors.dart';
 import 'price_tag.dart';
 import 'product_image.dart';
 
@@ -38,10 +39,19 @@ class ProductCard extends StatelessWidget {
     this.imageUrl,
     this.onSendInquiry,
     this.onTap,
+    this.originalPrice,
+    this.discountBadgePercent,
+    this.stockStatus,
+    this.isWishlisted = false,
+    this.onToggleWishlist,
   });
 
   final String title;
   final String description;
+
+  /// The price to actually show/inquire about — [Product.effectivePrice]
+  /// (the discounted price while a discount is active, the base price
+  /// otherwise), not necessarily [Product.price].
   final double price;
   final IconData icon;
   final Color placeholderColor;
@@ -49,6 +59,23 @@ class ProductCard extends StatelessWidget {
   final String sendInquiryLabel;
   final VoidCallback? onSendInquiry;
   final VoidCallback? onTap;
+
+  /// The pre-discount price, shown struck through next to [price] —
+  /// null (the common case) hides it entirely.
+  final double? originalPrice;
+
+  /// "-20%" badge value — null hides the badge.
+  final int? discountBadgePercent;
+
+  /// Raw `stock_status` text (e.g. "In Stock"/"Low Stock"/"Out of
+  /// Stock") — null/empty hides the badge.
+  final String? stockStatus;
+
+  final bool isWishlisted;
+
+  /// Null hides the wishlist heart entirely (e.g. for a context where
+  /// toggling doesn't make sense) — always supplied in practice.
+  final VoidCallback? onToggleWishlist;
 
   /// Card width and image aspect ratio — narrower/shorter than the
   /// previous pass so two fit per row in `Wrap` on a ~360dp screen
@@ -74,18 +101,55 @@ class ProductCard extends StatelessWidget {
             children: [
               AspectRatio(
                 aspectRatio: _imageAspectRatio,
-                child: ProductImage(
-                  imageUrl: imageUrl,
-                  icon: icon,
-                  placeholderColor: placeholderColor,
-                  // Decode target sized to roughly the card's rendered
-                  // pixel size (times ~2 for hi-dpi screens) rather than
-                  // the source photo's full resolution — real product
-                  // photos can be large, and decoding/holding a
-                  // full-resolution bitmap in memory for a ~156×111
-                  // logical-pixel tile wastes both CPU and memory on
-                  // every card in view.
-                  memCacheWidth: (_width * 2).round(),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ProductImage(
+                      imageUrl: imageUrl,
+                      icon: icon,
+                      placeholderColor: placeholderColor,
+                      // Decode target sized to roughly the card's
+                      // rendered pixel size (times ~2 for hi-dpi
+                      // screens) rather than the source photo's full
+                      // resolution — real product photos can be large,
+                      // and decoding/holding a full-resolution bitmap
+                      // in memory for a ~156×111 logical-pixel tile
+                      // wastes both CPU and memory on every card in
+                      // view.
+                      memCacheWidth: (_width * 2).round(),
+                    ),
+                    if (discountBadgePercent != null)
+                      Positioned(
+                        top: AppSpacing.xs,
+                        left: AppSpacing.xs,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error,
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
+                          child: Text(
+                            '-$discountBadgePercent%',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onError,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (onToggleWishlist != null)
+                      Positioned(
+                        top: AppSpacing.xs,
+                        right: AppSpacing.xs,
+                        child: _WishlistButton(
+                          isWishlisted: isWishlisted,
+                          onTap: onToggleWishlist!,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               Padding(
@@ -116,7 +180,37 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    PriceTag(price: price),
+                    Row(
+                      children: [
+                        PriceTag(price: price),
+                        if (originalPrice != null) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          Flexible(
+                            child: Text(
+                              'BD ${originalPrice!.toStringAsFixed(2)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (stockStatus != null && stockStatus!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        stockStatus!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: _stockColor(theme, stockStatus!),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.sm),
                     SizedBox(
                       width: double.infinity,
@@ -142,6 +236,40 @@ class ProductCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _stockColor(ThemeData theme, String status) {
+    final lower = status.toLowerCase();
+    if (lower.contains('out')) return theme.colorScheme.error;
+    if (lower.contains('low')) return AppColors.gold;
+    return AppColors.success;
+  }
+}
+
+class _WishlistButton extends StatelessWidget {
+  const _WishlistButton({required this.isWishlisted, required this.onTap});
+
+  final bool isWishlisted;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.85),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(
+            isWishlisted ? Icons.favorite : Icons.favorite_border,
+            size: 16,
+            color: isWishlisted ? AppColors.error : AppColors.primary,
           ),
         ),
       ),

@@ -76,6 +76,15 @@ class SupabaseProductRepository implements ProductRepository {
       featured: (row['featured'] as bool?) ?? false,
       displayOrder: (row['display_order'] as num?)?.toInt() ?? 0,
       createdAt: DateTime.tryParse(row['created_at']?.toString() ?? ''),
+      // Discount columns don't exist in production yet (see
+      // docs/DISCOUNT_WISHLIST_MIGRATION.sql) — a full-row `.select()`
+      // simply omits missing keys rather than erroring, so every one of
+      // these defaults to "no discount" until that migration is applied.
+      discountEnabled: (row['discount_enabled'] as bool?) ?? false,
+      discountPercentage: (row['discount_percentage'] as num?)?.toDouble(),
+      discountPrice: (row['discount_price'] as num?)?.toDouble(),
+      discountStartDate: DateTime.tryParse(row['discount_start_date']?.toString() ?? ''),
+      discountEndDate: DateTime.tryParse(row['discount_end_date']?.toString() ?? ''),
       icon: productPlaceholderIcon,
       placeholderColor: placeholderColorForProductId(id),
     );

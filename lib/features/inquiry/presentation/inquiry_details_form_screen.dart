@@ -14,8 +14,10 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/auth_session.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import 'controllers/inquiry_cart_controller.dart';
+import 'controllers/inquiry_history_controller.dart';
 import '../domain/entities/inquiry.dart';
 import '../domain/entities/inquiry_contact_details.dart';
+import '../domain/entities/inquiry_history_entry.dart';
 
 /// Inquiry Details Form — Name/Company/Email/Mobile/Country/Notes, then a
 /// real submission: builds an [Inquiry] snapshot (with a client-generated
@@ -116,6 +118,21 @@ class _InquiryDetailsFormScreenState
     setState(() => _isSubmitting = true);
     try {
       await ref.read(inquirySubmissionRepositoryProvider).submit(inquiry);
+      // Best-effort local record for "My Orders" — a no-op for a guest
+      // submission, and never blocks a submission that already
+      // succeeded even if local storage somehow fails.
+      try {
+        await ref
+            .read(inquiryHistoryControllerProvider.notifier)
+            .record(
+              InquiryHistoryEntry(
+                referenceNumber: inquiry.referenceNumber,
+                submittedAt: inquiry.submittedAt,
+                itemCount: inquiry.items.length,
+                totalQuantity: inquiry.totalQuantity,
+              ),
+            );
+      } catch (_) {}
       if (!mounted) return;
       ref.read(inquiryCartProvider.notifier).clear();
       context.pushReplacement('/inquiry/confirmation', extra: inquiry);

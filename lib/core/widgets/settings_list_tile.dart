@@ -10,6 +10,7 @@ class SettingsListTile extends StatelessWidget {
     required this.label,
     this.trailingText,
     this.onTap,
+    this.color,
   });
 
   final IconData icon;
@@ -17,12 +18,17 @@ class SettingsListTile extends StatelessWidget {
   final String? trailingText;
   final VoidCallback? onTap;
 
+  /// Overrides the icon/label color — e.g. the destructive red on a
+  /// "Log out" row. Null (the common case) uses the theme's normal
+  /// primary/on-surface colors.
+  final Color? color;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, color: theme.colorScheme.primary),
-      title: Text(label),
+      leading: Icon(icon, color: color ?? theme.colorScheme.primary),
+      title: Text(label, style: color != null ? TextStyle(color: color) : null),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

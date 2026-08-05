@@ -40,7 +40,7 @@ class HomeSearchBar extends StatelessWidget {
                 // hint overflowing this Row horizontally.
                 Expanded(
                   child: Text(
-                    l10n.searchHint,
+                    l10n.homeSearchHint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(

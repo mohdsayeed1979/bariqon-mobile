@@ -85,6 +85,9 @@ class MockCatalogData {
       featuresAr: ['نسيج فاخر مضفور', 'جاهز للتقديم كهدية'],
       featured: true,
       displayOrder: 0,
+      discountEnabled: true,
+      discountPercentage: 20,
+      discountPrice: 8.00,
     ),
     Product(
       id: 'p-featured-2',

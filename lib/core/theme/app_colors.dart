@@ -16,6 +16,7 @@ class AppColors {
 
   // --- Placeholder neutrals/semantics (DESIGN_SYSTEM.md §1 — unconfirmed)
   static const Color error = Color(0xFFB3261E);
+  static const Color success = Color(0xFF2E7D32); // "In Stock" badge, etc.
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF121212);
 }
