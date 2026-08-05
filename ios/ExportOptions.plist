@@ -8,20 +8,11 @@
 	is the correct method for both — TestFlight builds are uploaded the
 	same way as App Store submissions, just held in review-pending state
 	until you choose to release them.
-
-	teamID is intentionally left unset: the Apple Developer Program
-	enrollment isn't active yet, so there's no team to reference. Once it
-	is, add:
-		<key>teamID</key>
-		<string>YOUR_10_CHARACTER_TEAM_ID</string>
-	(find it at developer.apple.com/account under Membership Details).
-	Automatic signing needs this key present for a non-interactive
-	`xcodebuild -exportArchive`/`flutter build ipa` export; archiving and
-	exporting through Xcode's own Organizer UI does not require it (Xcode
-	resolves the team interactively there instead).
 	-->
 	<key>method</key>
 	<string>app-store</string>
+	<key>teamID</key>
+	<string>HNAQT9S36Q</string>
 	<key>signingStyle</key>
 	<string>automatic</string>
 	<key>uploadSymbols</key>
