@@ -60,6 +60,25 @@
   "@toggleLanguageTooltip": {
     "description": "Tooltip/semantic label for the temporary language toggle in the app bar, ahead of the real Language Selector screen (Settings, later phase)."
   },
+  "homeGreeting": "Hello, {name}",
+  "@homeGreeting": {
+    "description": "Home header greeting — the signed-in user's name, or homeGuestName for a guest/signed-out session.",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeGuestName": "Guest",
+  "@homeGuestName": {
+    "description": "Name shown in the Home greeting when no one is signed in."
+  },
+  "homeNotificationsTooltip": "Notifications",
+  "@homeNotificationsTooltip": {
+    "description": "Tooltip on the Home header's notification bell icon."
+  },
+  "homeSearchHint": "Search for gift boxes...",
+  "@homeSearchHint": {
+    "description": "Placeholder text in the Home screen's search bar."
+  },
   "homeWelcomeTitle": "Welcome to Bariqon",
   "@homeWelcomeTitle": {
     "description": "Home screen welcome section heading."
@@ -92,9 +111,9 @@
   "@homeHeroSlide3Subtitle": {
     "description": "Hero carousel slide 3 subtitle."
   },
-  "homeSectionFeaturedCategories": "Featured Categories",
+  "homeSectionFeaturedCategories": "Shop by Category",
   "@homeSectionFeaturedCategories": {
-    "description": "Home screen section title."
+    "description": "Home screen section title (renamed from \"Featured Categories\" as part of the Home Dashboard redesign)."
   },
   "homeSectionFeaturedProducts": "Featured Products",
   "@homeSectionFeaturedProducts": {

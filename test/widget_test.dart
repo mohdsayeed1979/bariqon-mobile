@@ -75,7 +75,7 @@ void main() {
     await _pumpPastSplash(tester);
 
     expect(find.text('Home'), findsWidgets); // app bar title + tab label
-    expect(find.text('Welcome to Bariqon'), findsOneWidget);
+    expect(find.text('Hello, Guest'), findsOneWidget);
 
     await _scrollHome(tester, 500);
     expect(find.text('Featured Products'), findsOneWidget);
@@ -404,9 +404,12 @@ void main() {
   ) async {
     await _pumpPastSplash(tester);
 
-    // find.byIcon(Icons.search) would also match the decorative icon in
-    // Home's own tappable search bar — target the app bar action
-    // specifically via its tooltip instead.
+    // Home's own header/search bar replaced its app bar (see HomeHeader),
+    // so it no longer carries a search app-bar action — Categories still
+    // uses BrandedAppBar with the default search action, so exercise it
+    // from there instead.
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Search'));
     await tester.pumpAndSettle();
 
@@ -419,7 +422,7 @@ void main() {
   ) async {
     await _pumpPastSplash(tester);
 
-    await tester.tap(find.text('Search products…').first);
+    await tester.tap(find.text('Search for gift boxes...').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Search'), findsWidgets);
@@ -434,7 +437,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('الرئيسية'), findsWidgets);
-    expect(find.text('مرحبًا بكم في بريقون'), findsOneWidget);
+    expect(find.text('مرحباً، ضيف'), findsOneWidget);
   });
 
   // Regression guard for the RenderFlex overflow found in review: a narrow
@@ -680,7 +683,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Login navigates to Home on success.
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, jane'), findsOneWidget);
 
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
@@ -759,7 +762,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, jane'), findsOneWidget);
 
       await _scrollHome(tester, 500);
       await tester.tap(find.text('Send Inquiry').first);
@@ -819,7 +822,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Continue as Guest'));
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, Guest'), findsOneWidget);
 
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
@@ -863,7 +866,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to Bariqon'), findsOneWidget);
+      expect(find.text('Hello, John Smith'), findsOneWidget);
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
       expect(find.text('John Smith'), findsOneWidget);
