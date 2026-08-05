@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/widgets/coming_soon_screen.dart';
 import '../features/auth/domain/entities/app_user.dart';
 import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
@@ -15,8 +17,13 @@ import '../features/inquiry/domain/entities/inquiry.dart';
 import '../features/inquiry/presentation/inquiry_cart_screen.dart';
 import '../features/inquiry/presentation/inquiry_confirmation_screen.dart';
 import '../features/inquiry/presentation/inquiry_details_form_screen.dart';
+import '../features/inquiry/presentation/inquiry_history_screen.dart';
+import '../features/profile/domain/entities/saved_address.dart';
+import '../features/profile/presentation/address_form_screen.dart';
+import '../features/profile/presentation/addresses_screen.dart';
 import '../features/profile/presentation/edit_profile_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
+import '../features/wishlist/presentation/wishlist_screen.dart';
 import '../features/settings/presentation/about_screen.dart';
 import '../features/settings/presentation/app_lock_settings_screen.dart';
 import '../features/settings/presentation/contact_screen.dart';
@@ -54,6 +61,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/categories',
                 builder: (context, state) => const CategoryListScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/wishlist',
+                builder: (context, state) => const WishlistScreen(),
               ),
             ],
           ),
@@ -118,6 +133,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/profile/edit',
         builder: (context, state) =>
             EditProfileScreen(user: state.extra as AppUser?),
+      ),
+      GoRoute(
+        path: '/profile/orders',
+        builder: (context, state) => const InquiryHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/profile/addresses',
+        builder: (context, state) => const AddressesScreen(),
+      ),
+      GoRoute(
+        path: '/profile/addresses/form',
+        builder: (context, state) =>
+            AddressFormScreen(existing: state.extra as SavedAddress?),
+      ),
+      GoRoute(
+        path: '/profile/faq',
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context);
+          return ComingSoonScreen(
+            title: l10n.profileFaqTitle,
+            icon: Icons.help_outline,
+          );
+        },
       ),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(

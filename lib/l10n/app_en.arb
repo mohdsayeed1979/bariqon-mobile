@@ -76,6 +76,168 @@
     "description": "Bottom navigation tab label."
   },
 
+  "navWishlist": "Wishlist",
+  "@navWishlist": {
+    "description": "Bottom navigation label for the Wishlist tab."
+  },
+
+  "homeGreeting": "Hello, {name}",
+  "@homeGreeting": {
+    "description": "Home header greeting — the signed-in user's name, or homeGuestName for a guest/signed-out session.",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "homeGuestName": "Guest",
+  "@homeGuestName": {
+    "description": "Name shown in the Home greeting when no one is signed in."
+  },
+
+  "homeNotificationsTooltip": "Notifications",
+  "@homeNotificationsTooltip": {
+    "description": "Tooltip on the Home header's notification bell icon."
+  },
+
+  "homeSearchHint": "Search for gift boxes...",
+  "@homeSearchHint": {
+    "description": "Placeholder text in the Home screen's search bar."
+  },
+
+  "wishlistTitle": "Wishlist",
+  "@wishlistTitle": {
+    "description": "Wishlist screen app bar title."
+  },
+
+  "wishlistEmptyMessage": "Your wishlist is empty.",
+  "@wishlistEmptyMessage": {
+    "description": "Empty state message on the Wishlist screen."
+  },
+
+  "wishlistSignInRequiredTitle": "Sign in required",
+  "@wishlistSignInRequiredTitle": {
+    "description": "Dialog title shown when a guest taps the wishlist heart icon."
+  },
+
+  "wishlistSignInRequiredMessage": "Sign in to save products to your wishlist.",
+  "@wishlistSignInRequiredMessage": {
+    "description": "Dialog message shown when a guest taps the wishlist heart icon."
+  },
+
+  "wishlistAddedSnackbar": "Added to your wishlist",
+  "@wishlistAddedSnackbar": {
+    "description": "Confirmation shown after tapping the wishlist heart icon to add a product."
+  },
+
+  "wishlistRemovedSnackbar": "Removed from your wishlist",
+  "@wishlistRemovedSnackbar": {
+    "description": "Confirmation shown after tapping the wishlist heart icon to remove a product."
+  },
+
+  "profileOrdersTitle": "My Orders",
+  "@profileOrdersTitle": {
+    "description": "Profile menu entry leading to Inquiry History."
+  },
+
+  "ordersEmptyMessage": "You haven't submitted any inquiries yet.",
+  "@ordersEmptyMessage": {
+    "description": "Empty state on the My Orders (Inquiry History) screen."
+  },
+
+  "ordersReferenceLabel": "Reference",
+  "@ordersReferenceLabel": {
+    "description": "Label before an inquiry's reference number on the My Orders screen."
+  },
+
+  "ordersEntrySummary": "{itemCount, plural, one{1 item} other{{itemCount} items}} • Qty {totalQuantity}",
+  "@ordersEntrySummary": {
+    "description": "Item/quantity summary line on a My Orders entry.",
+    "placeholders": {
+      "itemCount": { "type": "int" },
+      "totalQuantity": { "type": "int" }
+    }
+  },
+
+  "profileAddressesTitle": "Addresses",
+  "@profileAddressesTitle": {
+    "description": "Profile menu entry leading to the saved address book."
+  },
+
+  "addressesEmptyMessage": "You haven't saved any addresses yet.",
+  "@addressesEmptyMessage": {
+    "description": "Empty state on the Addresses screen."
+  },
+
+  "addressAddCta": "Add Address",
+  "@addressAddCta": {
+    "description": "Button/action to add a new saved address."
+  },
+
+  "addressEditTitle": "Edit Address",
+  "@addressEditTitle": {
+    "description": "Title of the address form screen when editing an existing address."
+  },
+
+  "addressAddTitle": "Add Address",
+  "@addressAddTitle": {
+    "description": "Title of the address form screen when adding a new address."
+  },
+
+  "addressLabelField": "Label (e.g. Home, Office)",
+  "@addressLabelField": {
+    "description": "Free-text label field on the address form."
+  },
+
+  "addressLineField": "Address",
+  "@addressLineField": {
+    "description": "Street address field on the address form."
+  },
+
+  "addressCityField": "City",
+  "@addressCityField": {
+    "description": "City field on the address form."
+  },
+
+  "addressSaveCta": "Save Address",
+  "@addressSaveCta": {
+    "description": "Submit button on the address form."
+  },
+
+  "addressDeleteConfirmTitle": "Delete address?",
+  "@addressDeleteConfirmTitle": {
+    "description": "Confirmation dialog title before deleting a saved address."
+  },
+
+  "addressDeleteConfirmMessage": "This removes the saved address. This can't be undone.",
+  "@addressDeleteConfirmMessage": {
+    "description": "Confirmation dialog message before deleting a saved address."
+  },
+
+  "addressDeleteAction": "Delete",
+  "@addressDeleteAction": {
+    "description": "Confirm-delete action label."
+  },
+
+  "addressDefaultBadge": "Default",
+  "@addressDefaultBadge": {
+    "description": "Badge shown on the default saved address."
+  },
+
+  "addressSetDefaultAction": "Set as Default",
+  "@addressSetDefaultAction": {
+    "description": "Action to mark a saved address as the default one."
+  },
+
+  "profileFaqTitle": "FAQ",
+  "@profileFaqTitle": {
+    "description": "Profile menu entry — placeholder screen, FAQ content isn't written yet."
+  },
+
+  "comingSoonMessage": "This feature is coming soon.",
+  "@comingSoonMessage": {
+    "description": "Body text on a placeholder screen for a not-yet-built feature."
+  },
+
   "comingSoonBadge": "Coming soon",
   "@comingSoonBadge": {
     "description": "Placeholder badge shown on tab root screens not yet implemented (Categories, Inquiry, Profile as of Phase 2B — Home got its real UI this phase)."
@@ -141,9 +303,9 @@
     "description": "Hero carousel slide 3 subtitle."
   },
 
-  "homeSectionFeaturedCategories": "Featured Categories",
+  "homeSectionFeaturedCategories": "Shop by Category",
   "@homeSectionFeaturedCategories": {
-    "description": "Home screen section title."
+    "description": "Home screen section title (renamed from \"Featured Categories\" to match the Naqir-inspired redesign)."
   },
 
   "homeSectionFeaturedProducts": "Featured Products",

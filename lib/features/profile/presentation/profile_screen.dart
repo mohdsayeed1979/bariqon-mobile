@@ -6,18 +6,21 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/avatar_placeholder.dart';
 import '../../../core/widgets/branded_app_bar.dart';
 import '../../../core/widgets/responsive_center.dart';
+import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/settings_list_tile.dart';
+import '../../../core/widgets/sign_in_prompt_view.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/domain/entities/app_user.dart';
 import '../../auth/domain/entities/auth_session.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 
-/// Profile tab root, per docs/SCREEN_SPECIFICATIONS.md §18 and the Phase 4
-/// brief — branches on [AuthSession] rather than being a single fixed
-/// layout: Signed Out and Guest both show a sign-in prompt (Guest's is
-/// softer, since they chose to browse without an account), Signed In shows
-/// the real profile fields + Edit Profile. Settings is reachable from every
-/// branch via the app bar action, since Language/Theme/About/Contact don't
-/// require an account.
+/// Profile tab root, redesigned per the Naqir-inspired brief — an avatar/
+/// name/email header, then grouped navigation rows (reusing
+/// [SettingsListTile], the same row shape Settings already uses) instead
+/// of the previous plain [Card] of [ListTile]s. Still branches on
+/// [AuthSession]: Signed Out/Guest show [SignInPromptView], Signed In
+/// shows the real profile. Every existing route/action this screen led to
+/// is unchanged — only the layout is new.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -31,71 +34,23 @@ class ProfileScreen extends ConsumerWidget {
         title: l10n.navProfile,
         showSearchAction: false,
         extraActions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.settingsTitle,
-            onPressed: () => context.push('/settings'),
-          ),
+          // Signed-in users already have a "Settings" row in the list
+          // below — this app bar action only appears for Guest/Signed
+          // Out sessions, which show the sign-in prompt instead and have
+          // no in-list rows of their own to reach Settings from.
+          if (session is! SignedInSession)
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              tooltip: l10n.settingsTitle,
+              onPressed: () => context.push('/settings'),
+            ),
         ],
       ),
       body: switch (session) {
-        SignedOutSession() => _SignedOutPrompt(
-          message: l10n.profileSignedOutMessage,
-        ),
-        GuestSession() => _SignedOutPrompt(message: l10n.profileGuestMessage),
+        SignedOutSession() => SignInPromptView(message: l10n.profileSignedOutMessage),
+        GuestSession() => SignInPromptView(message: l10n.profileGuestMessage),
         SignedInSession(:final user) => _SignedInProfile(user: user),
       },
-    );
-  }
-}
-
-class _SignedOutPrompt extends StatelessWidget {
-  const _SignedOutPrompt({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return ResponsiveCenter(
-      width: ContentWidth.narrow,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_circle_outlined,
-              size: 64,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => context.push('/auth/login'),
-                child: Text(l10n.authSignInCta),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => context.push('/auth/register'),
-                child: Text(l10n.authRegisterCta),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -144,71 +99,120 @@ class _SignedInProfile extends ConsumerWidget {
     return ResponsiveCenter(
       width: ContentWidth.narrow,
       child: ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      children: [
-        Center(
-          child: Column(
-            children: [
-              const AvatarPlaceholder(radius: 48),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                user.fullName,
-                style: theme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (user.company.isNotEmpty)
-                Text(
-                  user.company,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
+              children: [
+                AvatarPlaceholder(radius: 32, name: user.fullName),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        user.fullName,
+                        style: theme.textTheme.titleLarge,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        user.email,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Card(
-          child: Column(
+          const SizedBox(height: AppSpacing.lg),
+          SectionCard(
             children: [
-              ListTile(
-                leading: const Icon(Icons.email_outlined),
-                title: Text(l10n.authEmailLabel),
-                subtitle: Text(user.email),
+              SettingsListTile(
+                icon: Icons.person_outline,
+                label: l10n.profileEditCta,
+                onTap: () => context.push('/profile/edit', extra: user),
               ),
-              ListTile(
-                leading: const Icon(Icons.phone_outlined),
-                title: Text(l10n.inquiryFormMobile),
-                subtitle: Text(
-                  user.mobile.isEmpty ? l10n.profileNotProvided : user.mobile,
-                ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.receipt_long_outlined,
+                label: l10n.profileOrdersTitle,
+                onTap: () => context.push('/profile/orders'),
               ),
-              ListTile(
-                leading: const Icon(Icons.public_outlined),
-                title: Text(l10n.inquiryFormCountry),
-                subtitle: Text(
-                  user.country.isEmpty ? l10n.profileNotProvided : user.country,
-                ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.location_on_outlined,
+                label: l10n.profileAddressesTitle,
+                onTap: () => context.push('/profile/addresses'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.notifications_outlined,
+                label: l10n.settingsNotificationsTitle,
+                onTap: () => context.push('/settings/notifications'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.settings_outlined,
+                label: l10n.settingsTitle,
+                onTap: () => context.push('/settings'),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        FilledButton.tonal(
-          onPressed: () => context.push('/profile/edit', extra: user),
-          child: Text(l10n.profileEditCta),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        OutlinedButton(
-          onPressed: () => _confirmSignOut(context, ref),
-          child: Text(l10n.profileSignOutAction),
-        ),
-      ],
+          const SizedBox(height: AppSpacing.lg),
+          SectionCard(
+            children: [
+              SettingsListTile(
+                icon: Icons.info_outline,
+                label: l10n.settingsAboutTitle,
+                onTap: () => context.push('/settings/about'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.contact_mail_outlined,
+                label: l10n.settingsContactTitle,
+                onTap: () => context.push('/settings/contact'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.help_outline,
+                label: l10n.profileFaqTitle,
+                onTap: () => context.push('/profile/faq'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.privacy_tip_outlined,
+                label: l10n.settingsPrivacyTitle,
+                onTap: () => context.push('/settings/privacy'),
+              ),
+              const Divider(height: 1),
+              SettingsListTile(
+                icon: Icons.description_outlined,
+                label: l10n.settingsTermsTitle,
+                onTap: () => context.push('/settings/terms'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SectionCard(
+            children: [
+              SettingsListTile(
+                icon: Icons.logout,
+                label: l10n.profileSignOutAction,
+                color: Theme.of(context).colorScheme.error,
+                onTap: () => _confirmSignOut(context, ref),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -13,6 +13,10 @@ class SupabaseTables {
   static const String products = 'cms_products';
   static const String contactMessages = 'cms_contact_messages';
   static const String profiles = 'profiles';
+
+  /// Added by `docs/DISCOUNT_WISHLIST_MIGRATION.sql` — absent until that
+  /// migration is applied (see [SupabaseWishlistRepository]).
+  static const String wishlist = 'wishlist';
   static const String gallery = 'cms_gallery';
   static const String galleryAlbums = 'cms_gallery_albums';
 

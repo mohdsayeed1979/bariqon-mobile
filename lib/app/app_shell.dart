@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/catalog/presentation/controllers/catalog_providers.dart';
 import '../features/inquiry/presentation/controllers/inquiry_cart_controller.dart';
+import '../features/wishlist/presentation/controllers/wishlist_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 
 /// The permanent app shell — bottom navigation on phones, a
@@ -28,6 +29,7 @@ class AppShell extends ConsumerWidget {
   List<_Destination> _destinations(AppLocalizations l10n, int cartCount) => [
     _Destination(l10n.navHome, Icons.home_outlined, Icons.home),
     _Destination(l10n.navCategories, Icons.category_outlined, Icons.category),
+    _Destination(l10n.navWishlist, Icons.favorite_border, Icons.favorite),
     _Destination(
       l10n.navInquiry,
       Icons.shopping_bag_outlined,
@@ -50,6 +52,7 @@ class AppShell extends ConsumerWidget {
     final cartCount = ref.watch(inquiryCartItemCountProvider);
     final destinations = _destinations(l10n, cartCount);
     ref.watch(catalogRealtimeSyncProvider);
+    ref.watch(wishlistRealtimeSyncProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {

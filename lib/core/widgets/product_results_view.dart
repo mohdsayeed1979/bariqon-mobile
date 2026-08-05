@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/catalog/domain/entities/product.dart';
 import '../../features/inquiry/presentation/controllers/inquiry_cart_controller.dart';
+import '../../features/wishlist/presentation/controllers/wishlist_controller.dart';
+import '../../features/wishlist/presentation/utils/wishlist_toggle.dart';
 import 'empty_state_view.dart';
 import 'product_card.dart';
 import 'skeleton_product_card.dart';
@@ -55,6 +57,8 @@ class ProductResultsView extends ConsumerWidget {
       );
     }
 
+    final wishlistedIds = ref.watch(wishlistControllerProvider).value ?? const {};
+
     if (products.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(top: 24),
@@ -80,11 +84,16 @@ class ProductResultsView extends ConsumerWidget {
             child: ProductCard(
               title: product.name(locale),
               description: product.description(locale),
-              price: product.price,
+              price: product.effectivePrice,
+              originalPrice: product.hasActiveDiscount ? product.price : null,
+              discountBadgePercent: product.discountBadgePercent,
+              stockStatus: product.stockStatus,
               icon: product.icon,
               placeholderColor: product.placeholderColor,
               imageUrl: product.imageUrl,
               sendInquiryLabel: sendInquiryLabel,
+              isWishlisted: wishlistedIds.contains(product.id),
+              onToggleWishlist: () => toggleWishlist(context, ref, product),
               onTap: onProductTap == null ? null : () => onProductTap!(product),
               onSendInquiry: () {
                 ref.read(inquiryCartProvider.notifier).addProduct(product);
