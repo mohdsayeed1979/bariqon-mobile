@@ -20,6 +20,18 @@
   "@genericErrorMessage": {
     "description": "Body text paired with genericErrorTitle."
   },
+  "updateRequiredTitle": "Update required",
+  "@updateRequiredTitle": {
+    "description": "Title of the mandatory Google Play update screen shown when Play reports a required update."
+  },
+  "updateRequiredMessage": "Bariqon has a new version available. Please update to continue using the app.",
+  "@updateRequiredMessage": {
+    "description": "Body text on the mandatory update screen, shown behind Google Play's own update flow."
+  },
+  "updateNowCta": "Update",
+  "@updateNowCta": {
+    "description": "Button that re-launches Google Play's update flow on the mandatory update screen."
+  },
   "networkErrorMessage": "Couldn't connect. Check your internet connection and try again.",
   "@networkErrorMessage": {
     "description": "Shown when a request fails due to connectivity/timeout."

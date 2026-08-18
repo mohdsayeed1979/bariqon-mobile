@@ -12,6 +12,7 @@ import '../features/settings/presentation/controllers/settings_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'app_lock_gate.dart';
 import 'router.dart';
+import 'update_gate.dart';
 
 /// Current app locale. Hand-written (no codegen — see Phase 1 summary),
 /// seeded from [AppConfig.defaultLocale]. This is the eventual backing
@@ -36,11 +37,13 @@ class BariqonApp extends ConsumerWidget {
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      // Sits above the Navigator (router builds inside this), so App Lock
-      // can enforce itself regardless of which route is current rather
-      // than every screen needing to check lock state itself.
-      builder: (context, child) =>
-          AppLockGate(child: child ?? const SizedBox.shrink()),
+      // Sits above the Navigator (router builds inside this), so both gates
+      // enforce themselves regardless of which route is current rather than
+      // every screen needing to check state itself. UpdateGate is outermost:
+      // a mandatory Google Play update outranks even the lock screen.
+      builder: (context, child) => UpdateGate(
+        child: AppLockGate(child: child ?? const SizedBox.shrink()),
+      ),
       theme: AppTheme.light(isRtl: isRtl),
       darkTheme: AppTheme.dark(isRtl: isRtl),
       themeMode: themeMode,

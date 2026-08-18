@@ -20,6 +20,15 @@
 # though this app doesn't use split delivery.
 -dontwarn com.google.android.play.core.**
 
+# Google Play In-App Updates (in_app_update → Play Core app-update). Kept so
+# the Immediate update flow isn't stripped when minification is on. The Play
+# app-update AAR ships its own consumer rules too; this is a defensive
+# belt-and-suspenders for the classes the plugin touches at runtime.
+-keep class com.google.android.play.core.appupdate.** { *; }
+-keep class com.google.android.play.core.install.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+-keep class de.ffuf.in_app_update.** { *; }
+
 # Gson — used transitively by some networking plugins for JSON (de)serialization.
 -keepattributes Signature
 -keepattributes *Annotation*
