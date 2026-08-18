@@ -63,6 +63,29 @@ class ProductResultsView extends ConsumerStatefulWidget {
 class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
   late int _visibleCount = widget.pageSize;
 
+  /// The *enclosing* scrollable's position (the ListView / SingleChildScroll-
+  /// View this widget is embedded in on every screen that uses it). Windowing
+  /// is driven off this rather than a self-owned NotificationListener: this
+  /// widget is a descendant of that scrollable, and ScrollNotifications only
+  /// bubble *up* to ancestors — a listener placed here would never see the
+  /// parent's scroll, so incremental loading would silently never advance
+  /// past the first page. Null when there is no enclosing scrollable (e.g.
+  /// the Wishlist tab renders this in a plain column), in which case every
+  /// item is rendered up front so nothing is ever unreachable.
+  ScrollPosition? _scrollPosition;
+  bool _fillScheduled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final position = Scrollable.maybeOf(context)?.position;
+    if (position != _scrollPosition) {
+      _scrollPosition?.removeListener(_maybeLoadMore);
+      _scrollPosition = position;
+      _scrollPosition?.addListener(_maybeLoadMore);
+    }
+  }
+
   @override
   void didUpdateWidget(covariant ProductResultsView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -77,6 +100,12 @@ class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
     }
   }
 
+  @override
+  void dispose() {
+    _scrollPosition?.removeListener(_maybeLoadMore);
+    super.dispose();
+  }
+
   bool _sameProductIds(List<Product> a, List<Product> b) {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
@@ -85,10 +114,17 @@ class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
     return true;
   }
 
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (_visibleCount >= widget.products.length) return false;
-    final metrics = notification.metrics;
-    if (metrics.maxScrollExtent - metrics.pixels < 600) {
+  /// Grows the visible window by one page when the enclosing scroll nears
+  /// its end. Also fires once per frame while the rendered content is still
+  /// shorter than the viewport (maxScrollExtent == 0) so a short-but-multi-
+  /// page result fills the screen without needing a scroll gesture that
+  /// isn't possible yet.
+  void _maybeLoadMore() {
+    final position = _scrollPosition;
+    if (position == null || !mounted) return;
+    if (_visibleCount >= widget.products.length) return;
+    if (!position.hasContentDimensions || !position.hasPixels) return;
+    if (position.maxScrollExtent - position.pixels < 600) {
       setState(() {
         _visibleCount = (_visibleCount + widget.pageSize).clamp(
           0,
@@ -96,7 +132,6 @@ class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
         );
       });
     }
-    return false;
   }
 
   @override
@@ -126,63 +161,78 @@ class _ProductResultsViewState extends ConsumerState<ProductResultsView> {
       );
     }
 
-    final visibleProducts = widget.products.take(_visibleCount);
+    // With no enclosing scrollable there's no way to reveal more on scroll,
+    // so windowing would permanently hide anything past the first page —
+    // render every item instead.
+    final effectiveCount = _scrollPosition == null
+        ? widget.products.length
+        : _visibleCount;
+    final visibleProducts = widget.products.take(effectiveCount);
+    final hasMore = effectiveCount < widget.products.length;
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: _onScrollNotification,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              for (final product in visibleProducts)
-                // Isolates each card's own repaints (e.g. its image
-                // fade-in) from its neighbors — without this, one card
-                // updating can force the whole Wrap's paint layer to
-                // redraw.
-                RepaintBoundary(
-                  key: ValueKey(product.id),
-                  child: ProductCard(
-                    title: product.name(widget.locale),
-                    description: product.description(widget.locale),
-                    price: product.effectivePrice,
-                    originalPrice: product.hasActiveDiscount ? product.price : null,
-                    discountBadgePercent: product.discountBadgePercent,
-                    stockStatus: product.stockStatus,
-                    icon: product.icon,
-                    placeholderColor: product.placeholderColor,
-                    imageUrl: product.imageUrl,
-                    sendInquiryLabel: widget.sendInquiryLabel,
-                    isWishlisted: wishlistedIds.contains(product.id),
-                    onToggleWishlist: () => toggleWishlist(context, ref, product),
-                    onTap: widget.onProductTap == null
-                        ? null
-                        : () => widget.onProductTap!(product),
-                    onSendInquiry: () {
-                      ref.read(inquiryCartProvider.notifier).addProduct(product);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(widget.sendInquirySnackbarText)),
-                      );
-                    },
-                  ),
-                ),
-            ],
-          ),
-          if (_visibleCount < widget.products.length)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+    // Fill the viewport when the current window is shorter than the screen
+    // (so the user can't scroll to trigger the next page). Scheduled at most
+    // once per frame; converges because each pass adds a bounded page.
+    if (hasMore && _scrollPosition != null && !_fillScheduled) {
+      _fillScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fillScheduled = false;
+        _maybeLoadMore();
+      });
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final product in visibleProducts)
+              // Isolates each card's own repaints (e.g. its image
+              // fade-in) from its neighbors — without this, one card
+              // updating can force the whole Wrap's paint layer to
+              // redraw.
+              RepaintBoundary(
+                key: ValueKey(product.id),
+                child: ProductCard(
+                  title: product.name(widget.locale),
+                  description: product.description(widget.locale),
+                  price: product.effectivePrice,
+                  originalPrice: product.hasActiveDiscount ? product.price : null,
+                  discountBadgePercent: product.discountBadgePercent,
+                  stockStatus: product.stockStatus,
+                  icon: product.icon,
+                  placeholderColor: product.placeholderColor,
+                  imageUrl: product.imageUrl,
+                  sendInquiryLabel: widget.sendInquiryLabel,
+                  isWishlisted: wishlistedIds.contains(product.id),
+                  onToggleWishlist: () => toggleWishlist(context, ref, product),
+                  onTap: widget.onProductTap == null
+                      ? null
+                      : () => widget.onProductTap!(product),
+                  onSendInquiry: () {
+                    ref.read(inquiryCartProvider.notifier).addProduct(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(widget.sendInquirySnackbarText)),
+                    );
+                  },
                 ),
               ),
+          ],
+        ),
+        if (hasMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
